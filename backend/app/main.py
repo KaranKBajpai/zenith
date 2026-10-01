@@ -72,7 +72,7 @@ def get_passes():
         ],
     }
 
-
+# Temporary placeholder until Clerk auth is added
 TEST_USER_ID = 1
 
 
