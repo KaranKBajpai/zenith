@@ -18,3 +18,15 @@ class LocationResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class SatelliteResponse(BaseModel):
+    id: int
+    norad_id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
+class SatelliteListResponse(BaseModel):
+    satellites: list[SatelliteResponse]
