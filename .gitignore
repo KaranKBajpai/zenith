@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Skyfield's planet position file. Downloads itself on first run, too big for git.
+*.bsp
