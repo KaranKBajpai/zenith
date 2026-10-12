@@ -26,6 +26,7 @@
 ## Week 2 — Core logic + real data
 
 - [ ] **FIRST: Brightness.** Magnitude lookup table for the curated satellites, `magnitude` column on Satellite, per-pass brightness computed in the pass logic. Swap quality label from max altitude to real brightness
+- [x] Database migrations set up with Alembic (first migration creates all tables)
 - [ ] Skyfield integration wired into backend (reusing validated spike logic)
 - [ ] **Decide the partial-pass rule** — a pass can be sunlit at rise and shadowed seconds later. Counts as visible? Minimum visible duration? Show only the visible portion?
 - [ ] Seed script for the satellite catalog (replaces the hand-typed psql inserts, so Railway can be seeded too)
