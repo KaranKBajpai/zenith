@@ -23,9 +23,21 @@ class User(Base):
 class Satellite(Base):
     __tablename__ = "satellites"
 
-    id: Mapped[int] = mapped_column (primary_key=True)
-    norad_id: Mapped[int] = mapped_column (unique=True, index=True)
-    name: Mapped[str] = mapped_column (String(255))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    norad_id: Mapped[int] = mapped_column(unique=True, index=True)
+
+    # Friendly name shown in the app, like "Hubble"
+    name: Mapped[str] = mapped_column(String(255))
+
+    # Official name used by tracking catalogs, like "HST" or "CSS (TIANHE-1)"
+    # Nullable so a satellite can be added before this is looked up
+    catalog_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    # Standard magnitude: how bright it looks at 1,000 km, 50% lit
+    # Lower = brighter. Values come from Heavens-Above.
+    # Nullable because a newly added satellite may not have a known value yet
+    magnitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+
     tle_line1: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tle_line2: Mapped[str | None] = mapped_column(String(255), nullable=True)
     tle_updated_at: Mapped[datetime | None] = mapped_column(
