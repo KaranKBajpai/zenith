@@ -66,14 +66,26 @@ class Pass(Base):
     satellite_id: Mapped[int] = mapped_column (ForeignKey("satellites.id"), index=True)
     location_id: Mapped[int] = mapped_column (ForeignKey("locations.id"), index=True)
 
+    # When it crosses 10 degrees going up, reaches its highest point, and drops below 10 degrees
     rise_time: Mapped[datetime] = mapped_column (DateTime(timezone=True), index=True)
     culminate_time: Mapped[datetime] = mapped_column (DateTime(timezone=True))
     set_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    # When you actually see it: lit by the sun, under a dark sky.
+    # Not nullable: only passes that are visible at some point get saved,
+    # so every saved pass has both of these
+    appear_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    fade_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     rise_azimuth: Mapped[float] = mapped_column (Float)
     culminate_azimuth: Mapped[float] = mapped_column (Float)
     set_azimuth: Mapped[float] = mapped_column (Float)
     max_altitude: Mapped[float] = mapped_column (Float)
+
+    # Estimated brightness at its brightest moment. Lower = brighter.
+    # Nullable: a satellite with no known standard magnitude
+    # can't have its brightness estimated
+    magnitude: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     computed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
