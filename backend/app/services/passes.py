@@ -7,6 +7,11 @@ DARK_SKY_SUN_ALTITUDE = -6
 # Passes lower than this barely clear trees and rooftops, so we skip them
 MIN_PASS_ALTITUDE = 10.0
 
+# How often to check visibility during a pass.
+# Here we have 10 seconds.
+# Smaller = more precise appear / fade times, but more calculations
+VISIBILITY_STEP_SECONDS = 10
+
 # Load Skyfield's clock and the sun / planet position file once, when this
 # file is first imported. Loading the 17 MB file on every calculation
 # would be slow, so it happens once and then gets reused. 
@@ -104,3 +109,38 @@ def describe_pass(satellite, observer, p):
             "set": is_visible(satellite, observer, p["set"])
         },
     }
+
+
+def find_visible_window(satellite, observer, p):
+    """Find when the satellite actually appears and fades during one pass.
+    
+    Return (appears, fades) as Skyfield times,
+    or (None, None) if it's never visible during the pass.
+    """
+
+    # How long the pass lasts, in seconds
+    # Skyfield time differences come out in days, so x 24 x 60 x 60
+    duration_seconds = (p["set"] - p["rise"]) * 24 * 60 * 60
+
+    # How many checks to make, spaced VISIBILITY_STEP_SECONDS apart
+    # The +1 makes sure both the rise and the set get checked
+    steps = int(duration_seconds / VISIBILITY_STEP_SECONDS) + 1
+
+    # linspace = evenly spaced times from rise to set,
+    # such as 6:17:00, 6:17:10, 6:17:20, ... 6:23:00
+    check_times = ts.linspace(p["rise"], p["set"], steps)
+
+    # None means "not found yet"
+    appears = None
+    fades = None
+
+    for t in check_times:
+        if is_visible(satellite, observer, t):
+            if appears is None:
+                # The first visible moment we've seen: it just appeared
+                appears = t
+            # Keep moving this forward everytime it is visible
+            # When the loop ends, it's sitting on the LAST visible moment.
+            fades = t
+
+    return appears, fades
