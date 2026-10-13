@@ -27,7 +27,7 @@
 
 - [ ] **FIRST: Brightness.** Magnitude lookup table for the curated satellites, `magnitude` column on Satellite, per-pass brightness computed in the pass logic. Swap quality label from max altitude to real brightness
 - [x] Database migrations set up with Alembic (first migration creates all tables)
-- [ ] Skyfield integration wired into backend (reusing validated spike logic)
+- [x] Skyfield integration wired into backend (reusing validated spike logic) — service output checked against week_passes.py
 - [x] **Decide the partial-pass rule** — decided: compute the actual visible window (when it appears and fades), not rise-to-set
 - [ ] Seed script for the satellite catalog (replaces the hand-typed psql inserts, so Railway can be seeded too)
 - [ ] Scheduled job (APScheduler) fetching CelesTrak data
