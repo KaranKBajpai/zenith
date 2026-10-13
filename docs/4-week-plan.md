@@ -29,7 +29,7 @@
 - [x] Database migrations set up with Alembic (first migration creates all tables)
 - [x] Skyfield integration wired into backend (reusing validated spike logic) — service output checked against week_passes.py
 - [x] **Decide the partial-pass rule** — decided: compute the actual visible window (when it appears and fades), not rise-to-set
-- [ ] Seed script for the satellite catalog (replaces the hand-typed psql inserts, so Railway can be seeded too)
+- [x] Seed script for the satellite catalog (replaces the hand-typed psql inserts, so Railway can be seeded too) — `python -m app.seed`
 - [ ] Scheduled job (APScheduler) fetching CelesTrak data
 - [ ] Scheduled job computing real passes
 - [ ] Passes table populated with real, computed data — `GET /api/passes` switched from mock to real
