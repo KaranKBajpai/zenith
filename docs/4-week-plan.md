@@ -36,7 +36,7 @@
 - [ ] Location CRUD fully working against the real database, including switching the active location
 - [ ] Followed satellites: get my list, follow, unfollow — each one triggering a recompute of that user's passes
 - [ ] Frontend project scaffolded: Vite + React + TypeScript, connected to backend
-- [ ] **CORS configured for local development** so the frontend can call the backend
+- [x] **CORS configured for local development** so the frontend can call the backend — origins read from `FRONTEND_ORIGINS`, defaults to `localhost:5173`
 - [ ] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
 
 ---
