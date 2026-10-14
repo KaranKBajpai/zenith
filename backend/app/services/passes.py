@@ -1,4 +1,7 @@
+import math
+
 from skyfield.api import load 
+from skyfield.functions import angle_between
 
 # The sun must be at least this far below the horizon for the sky to be
 # dark enough to see satellites. Named, so nobody has to guess what -6 means
@@ -144,3 +147,65 @@ def find_visible_window(satellite, observer, p):
             fades = t
 
     return appears, fades
+
+
+def estimate_magnitude(satellite, observer, standard_magnitude, t):
+    """Estimate how bright the satellite looks at time t. Lower = brighter.
+    
+    Starts from the standard magnitude (brightness at 1,000 km, half lit),
+    then adjusts for the real distance and the Sun's angle.
+    """
+    # Positions at time t, all measured from Earth's center, in km
+    sat_pos = satellite.at(t).position.km
+    obs_pos = observer.at(t).position.km
+    sun_pos = (sun - earth).at(t).position.km
+
+    # 1. Distance: farther = dimmer.
+    # 0 at exactly 1,000 km, negative (brighter) when closer,
+    # positive (dimmer) when further
+    distance_km = (satellite - observer).at(t).distance().km
+    distance_term = 5 * math.log10(distance_km / 1000)
+
+    # 2. Lighting: the "phase angle" is the angle AT the satelltie
+    # between the direction to the Sun and the direction to you.
+    # (sun_pos - sat_pos) points from the satellite to the sun.
+    # (obs_pos - sat_pos) points from the satellite to you.
+    phase_angle = angle_between(sun_pos - sat_pos, obs_pos - sat_pos)
+
+    # How much of the sunlit side can you see, treating the satellite as a ball.
+    # This equals 1 at 90 degrees, matching the "half lit" in the
+    # standard magnitude, so at 90 degrees the lighting adjustment is zero.
+    lit_amount = math.sin(phase_angle) + (math.pi - phase_angle) * math.cos(phase_angle)
+
+    # Safety net: if the lit side faces almost fully away from you, lit_amount
+    # gets closer to 0, and log10 of 0 would crash. Keep it just above zero.
+    lit_amount = max(lit_amount, 0.001)
+    lighting_term = -2.5 * math.log10(lit_amount)
+
+    return standard_magnitude + distance_term + lighting_term
+
+
+def find_brightest_magnitude(satellite, observer, standard_magnitude, appears, fades):
+    """Return the brightest estimated magnitude during the visible window.
+    
+    Returns None if the satellite has no known standard magnitude.
+    """
+    # No standard magnitude in the database: no way to estimate brightness.
+    # This is the empty case the nullable magnitude column was made for.
+    if standard_magnitude is None:
+        return None
+
+    # Same sampling idea as find_visible_window, but only across the
+    # part of the pass you can actually see
+    duration_seconds = (fades - appears) * 24 * 60 * 60
+    steps = int(duration_seconds / VISIBILITY_STEP_SECONDS) + 1
+    check_times = ts.linspace(appears, fades, steps)
+
+    brightest = None
+    for t in check_times:
+        magnitude = estimate_magnitude(satellite, observer, standard_magnitude, t)
+        # Lower magnitude = brighter, so keep the SMALLEST number
+        if brightest is None or magnitude < brightest:
+            brightest = magnitude
+
+    return brightest

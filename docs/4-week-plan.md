@@ -25,7 +25,7 @@
 
 ## Week 2 — Core logic + real data
 
-- [ ] **FIRST: Brightness.** Magnitude lookup table for the curated satellites, `magnitude` column on Satellite, per-pass brightness computed in the pass logic. Swap quality label from max altitude to real brightness
+- [x] **Brightness (backend).** Standard magnitudes for the curated satellites, `magnitude` column on Satellite, per-pass brightness estimated in the pass logic (checked against Heavens-Above)
 - [x] Database migrations set up with Alembic (first migration creates all tables)
 - [x] Skyfield integration wired into backend (reusing validated spike logic) — service output checked against week_passes.py
 - [x] **Decide the partial-pass rule** — decided: compute the actual visible window (when it appears and fades), not rise-to-set
@@ -46,6 +46,7 @@
 - [ ] Navigation pattern (navbar) built as a shared component first
 - [ ] Signed-Out Landing built
 - [ ] Home (week view) built
+- [ ] Quality label (Excellent / Good / Fair) based on brightness, not max altitude
 - [ ] Pass Detail built
 - [ ] Sky Map built
 - [ ] Onboarding built
