@@ -1,8 +1,14 @@
 """Download orbital data (TLEs) from CelesTrak"""
 
 import time
+from datetime import datetime, timedelta, timezone
 
 import requests
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.database import SessionLocal
+from app.models import Satellite
 
 # CelesTrak's "GP" endpoint. CATNR = the NORAD number,
 # FORMAT=TLE = the classic two-line format the Satellite table stores.
@@ -16,6 +22,9 @@ HEADERS = {"User-Agent": "Zenith/0.1 (satellite pass app)"}
 # so both numbers stay modest.
 MAX_ATTEMPTS = 3
 RETRY_WAIT_SECONDS = 5
+
+# CelesTrak only publishes new data about every 2 hours.
+REFRESH_INTERVAL = timedelta(hours=2)
 
 
 def fetch_tle(norad_id):
@@ -55,3 +64,48 @@ def fetch_tle(norad_id):
 
     # All attempts failed: stop with a clear message
     raise RuntimeError(f"Couldn't get orbital data for NORAD {norad_id} after {MAX_ATTEMPTS} tries")
+
+
+def refresh_catalog_tles(db: Session):
+    """Fetch fresh orbital data for every satellite whose data is stale.
+    
+    Skips satellites updated within REFRESH_INTERVAL.
+    One satellite failing doesn't stop the others.
+    """
+    # The current time, in UTC. "timezone.utc" matters: the database stores
+    # times WITH a timezone, and Python refuses to compare a time that has a
+    # timezone with one that doesn't.
+    now = datetime.now(timezone.utc)
+
+    satellites = db.scalars(select(Satellite)).all()
+
+    for satellite in satellites:
+        # Updated recently? Then CelesTrak has nothing newer. Skip it.
+        # (tle_updated_at is None for a satellite that's never been fetched)
+        if satellite.tle_updated_at is not None and now - satellite.tle_updated_at < REFRESH_INTERVAL:
+            print(f"Skipped {satellite.name}: updated less than 2 hours ago")
+            continue
+
+        try:
+            line1, line2 = fetch_tle(satellite.norad_id)
+        except RuntimeError as e:
+            # All retries failed. Keep this satellite's old data and move on,
+            # so one bad satellite doesn't stop the rest from updating.
+            print(f"Kept old data for {satellite.name}: {e}")
+            continue
+
+        satellite.tle_line1 = line1
+        satellite.tle_line2 = line2
+        satellite.tle_updated_at = now
+        print(f"Updated {satellite.name}")
+
+    # Save every change at once
+    db.commit()
+
+# Lets you run this by hand: python -m app.services.celestrak
+if __name__ == "__main__":
+    db = SessionLocal()
+    try:
+        refresh_catalog_tles(db)
+    finally:
+        db.close()
