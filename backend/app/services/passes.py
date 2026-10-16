@@ -96,20 +96,22 @@ def describe_pass(satellite, observer, p):
         "culminate_time": p["culminate"].utc_datetime(),
         "set_time": p["set"].utc_datetime(),
 
-        # Compass directions, in degrees: 0 = north, 90 = east
-        "rise_azimuth": rise_az.degrees,
-        "culminate_azimuth": peak_az.degrees,
-        "set_azimuth": set_az.degrees,
+        # Compass directions, in degrees: 0 = north, 90 = east.
+        # float(...) turns Skyfield's NumPy numbers into plain Python numbers,
+        # which the database library knows how to save.
+        "rise_azimuth": float(rise_az.degrees),
+        "culminate_azimuth": float(peak_az.degrees),
+        "set_azimuth": float(set_az.degrees),
 
         # How high it gets: 0 = horizon, 90 = straight overhead
-        "max_altitude": peak_alt.degrees,
+        "max_altitude": float(peak_alt.degrees),
 
         # Can you see it at each of these moments?
         # This feeds the partial-pass decision
         "visible": {
             "rise": is_visible(satellite, observer, p["rise"]),
             "culminate": is_visible(satellite, observer, p["culminate"]),
-            "set": is_visible(satellite, observer, p["set"])
+            "set": is_visible(satellite, observer, p["set"]),
         },
     }
 
