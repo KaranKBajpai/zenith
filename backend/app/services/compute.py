@@ -7,10 +7,11 @@ it reads satellites and locations, computes passes, and saves Pass rows.
 from datetime import timedelta
 
 from skyfield.api import EarthSatellite, wgs84
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from app.models import Location, Pass, Satellite
+from app.database import SessionLocal
+from app.models import FollowedSatellite, Location, Pass, Satellite
 from app.services.passes import (
     ts,
     find_passes,
@@ -91,3 +92,47 @@ def compute_passes_for(db: Session, location: Location, satellite: Satellite) ->
         saved += 1
 
     return saved
+
+
+def compute_passes_for_location(db: Session, location: Location) -> int:
+    """Recompute passes over one location, for every satellite its owner follows.
+    
+    This is what runs when a user changes or adds a location.
+    """
+    # The satellites this location's owner follows. This is a JOIN:
+    # go through the followed_satellites table to find which satellite rows
+    # belong to this user. The same join explaiened back when the models were built
+    followed = db.scalars(
+        select(Satellite)
+        .join(FollowedSatellite, FollowedSatellite.satellite_id == Satellite.id)
+        .where(FollowedSatellite.user_id == location.user_id)
+    ).all()
+
+    total = 0
+    for satellite in followed:
+        total += compute_passes_for(db, location, satellite)
+    return total
+
+def compute_all_passes(db: Session) -> int:
+    """The night work: recompute passes for every saved location.
+    
+    Saves everything in one commit. Crash halfway saves nothing
+    """
+    total = 0
+    for location in db.scalars(select(Location)).all():
+        total += compute_passes_for_location(db, location)
+
+    # This is the "caller" that decides when to save
+    db.commit()
+    return total
+
+
+# Lets you run this by hand: python -m app.services.compute
+if __name__ == "__main__":
+    db = SessionLocal()
+    try:
+        total = compute_all_passes(db)
+        print(f"Saved {total} passes")
+    finally:
+        db.close()
+
