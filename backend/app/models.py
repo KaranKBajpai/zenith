@@ -68,7 +68,6 @@ class Pass(Base):
 
     # When it crosses 10 degrees going up, reaches its highest point, and drops below 10 degrees
     rise_time: Mapped[datetime] = mapped_column (DateTime(timezone=True), index=True)
-    culminate_time: Mapped[datetime] = mapped_column (DateTime(timezone=True))
     set_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     # When you actually see it: lit by the sun, under a dark sky.
@@ -77,10 +76,16 @@ class Pass(Base):
     appear_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     fade_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
-    rise_azimuth: Mapped[float] = mapped_column (Float)
+    # The highest point you can actually see and when.
+    culminate_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     culminate_azimuth: Mapped[float] = mapped_column (Float)
-    set_azimuth: Mapped[float] = mapped_column (Float)
     max_altitude: Mapped[float] = mapped_column (Float)
+
+    # Compass direction (0 = north, 90 = east)
+    rise_azimuth: Mapped[float] = mapped_column (Float) # Where is crosses 10 degrees going up 
+    set_azimuth: Mapped[float] = mapped_column (Float) # Where it drops below 10 degrees
+    appear_azimuth: Mapped[float] = mapped_column(Float) # Where to look when it appears
+    fade_azimuth: Mapped[float] = mapped_column(Float) # Where it is when it fades
 
     # Estimated brightness at its brightest moment. Lower = brighter.
     # Nullable: a satellite with no known standard magnitude

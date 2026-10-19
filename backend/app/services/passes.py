@@ -211,3 +211,40 @@ def find_brightest_magnitude(satellite, observer, standard_magnitude, appears, f
             brightest = magnitude
 
     return brightest
+
+
+def describe_visible_part(satellite, observer, p, appears, fades):
+    """Describe only the part of the pass you can actually see.
+    
+    Returns the highest VISIBLE point (when, how high, which direction).
+    plus the compass direction where it appears and where it fades.
+    """
+    # The satellite as seen from where the observer is standing
+    view = satellite - observer
+
+    # Find the moment of the highest point you can see.
+    # .tt turns a Skyfield time into a plain number.
+    if p["culminate"].tt < appears.tt:
+        # True peak happened while it was still in Earth's shadow.
+        # It won't get higher than this so the highest point is when it appears.
+        best = appears
+    elif p["culminate"].tt > fades.tt:
+        # True peak happens after it has already faded.
+        # It was still climbing, so it's highest point we can see is at the moment it fades
+        best = fades
+    else:
+        # The true peak is visible, so the true peak is the answer
+        best = p["culminate"]
+
+    # altaz() gives back (altitude, azimuth, distance). "_" = not needed.
+    best_alt, best_az, _ = view.at(best).altaz()
+    _, appear_az, _ = view.at(appears).altaz()
+    _, fade_az, _ = view.at(fades).altaz()
+
+    return {
+        "culminate_time": best.utc_datetime(),
+        "culminate_azimuth": float(best_az.degrees),
+        "max_altitude": float(best_alt.degrees),
+        "appear_azimuth": float(appear_az.degrees),
+        "fade_azimuth": float(fade_az.degrees),
+    }

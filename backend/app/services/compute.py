@@ -16,6 +16,7 @@ from app.services.passes import (
     ts,
     find_passes,
     describe_pass,
+    describe_visible_part,
     find_visible_window,
     find_brightest_magnitude,
 )
@@ -68,25 +69,40 @@ def compute_passes_for(db: Session, location: Location, satellite: Satellite) ->
         if visible_seconds < MIN_VISIBLE_SECONDS:
             continue
 
+        # Rise and set describe the whole pass, above 10 degrees
         details = describe_pass(sky_satellite, observer, p)
+
+        # Peak and directions describe only the part you can see
+        visible = describe_visible_part(sky_satellite, observer, p, appears, fades)
+
         magnitude = find_brightest_magnitude(
             sky_satellite, observer, satellite.magnitude, appears, fades
         )
 
         # One new row in the passes table. Each name on the left
-        # is a column in your Pass model.
+        # is a column in the Pass model.
         db.add(Pass(
             satellite_id=satellite.id,
             location_id=location.id,
+
+
+            # The whole pass: crossing 10 degrees going up and coming down
             rise_time=details["rise_time"],
-            culminate_time=details["culminate_time"],
             set_time=details["set_time"],
+            rise_azimuth=details["rise_azimuth"],
+            set_azimuth=details["set_azimuth"],
+
+            # The visible part: when it appears and fades, and where
             appear_time=appears.utc_datetime(),
             fade_time=fades.utc_datetime(),
-            rise_azimuth=details["rise_azimuth"],
-            culminate_azimuth=details["culminate_azimuth"],
-            set_azimuth=details["set_azimuth"],
-            max_altitude=details["max_altitude"],
+            appear_azimuth=visible["appear_azimuth"],
+            fade_azimuth=visible["fade_azimuth"],
+
+            # The highest point you can see. Not true peak.
+            culminate_time=visible["culminate_time"],
+            culminate_azimuth=visible["culminate_azimuth"],
+            max_altitude=visible["max_altitude"],
+
             magnitude=magnitude,
         ))
         saved += 1
