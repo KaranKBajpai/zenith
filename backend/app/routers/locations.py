@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Location
 from app.schemas import LocationCreate, LocationResponse
+from app.services.timezones import timezone_for
 
 router = APIRouter()
 
@@ -19,6 +20,9 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db)):
         latitude=location.latitude,
         longitude=location.longitude,
         place_name=location.place_name,
+        # Worked out by the server from the coordinates, never sent by the
+        # frontend. That way a user can't send an invalid timezone.
+        timezone=timezone_for(location.latitude, location.longitude),
     )
     db.add(new_location)
     db.commit()
