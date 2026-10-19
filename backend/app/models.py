@@ -54,6 +54,10 @@ class Location(Base):
     latitude: Mapped[float] = mapped_column(Float)
     longitude: Mapped[float] = mapped_column(Float)
     place_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # IANA timezone name, like "America/Los_Angeles". Worked out from the
+    # latitude and longitude when the location is saved. Used to decide which
+    # passes belong to which night, and to show times in local time.
+    timezone: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
