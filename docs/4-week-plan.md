@@ -32,7 +32,7 @@
 - [x] Seed script for the satellite catalog (replaces the hand-typed psql inserts, so Railway can be seeded too) — `python -m app.seed`
 - [x] Scheduled job (APScheduler) fetching CelesTrak data — retries, 2-hour refresh rule, runs at startup and daily at 4 AM
 - [x] Scheduled job computing real passes — every location × followed satellite, saved in one transaction, skips passes under a minute
-- [ ] Passes table populated with real, computed data — `GET /api/passes` switched from mock to real
+- [x] Passes table populated with real, computed data — `GET /api/passes` switched from mock to real: active location, 7 local calendar days (empty days included), grouped by appear time in the location's timezone
 - [ ] Location CRUD fully working against the real database, including switching the active location
 - [ ] Followed satellites: get my list, follow, unfollow — each one triggering a recompute of that user's passes
 - [ ] Frontend project scaffolded: Vite + React + TypeScript, connected to backend

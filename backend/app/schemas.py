@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field 
-from datetime import datetime
+from datetime import datetime, date as date_type
 
 class LocationCreate(BaseModel):
     nickname: str = Field(min_length=1, max_length=100)
@@ -32,3 +32,44 @@ class SatelliteResponse(BaseModel):
 
 class SatelliteListResponse(BaseModel):
     satellites: list[SatelliteResponse]
+
+
+class PassResponse(BaseModel):
+    id: int
+    satellite: SatelliteResponse
+
+    # The full pass: satellite above 10 degrees, sunlit or not
+    rise_time: datetime
+    set_time: datetime
+    rise_azimuth: float
+    set_azimuth: float
+
+    # The part you can actually see (sunlit & dark sky)
+    appear_time: datetime
+    fade_time: datetime
+    appear_azimuth: float
+    fade_azimuth: float
+
+    # Highest point while visible
+    culminate_time: datetime
+    culminate_azimuth: float
+    max_altitude: float
+
+    # Brightest moment. Lower = brighter. Empty if no magnitude data.
+    magnitude: float | None
+
+    model_config = {"from_attributes": True}
+
+
+class DayResponse(BaseModel):
+    # The calender date in the location's timezone
+    date: date_type
+    # Empty list = nothing visible that day. Day will still show up
+    passes: list[PassResponse]
+
+
+class PassesResponse(BaseModel):
+    location: LocationResponse
+    days: list[DayResponse]
+
+    

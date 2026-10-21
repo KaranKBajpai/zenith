@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, Float, ForeignKey, String, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
@@ -69,6 +69,8 @@ class Pass(Base):
     id: Mapped[int] = mapped_column (primary_key=True)
     satellite_id: Mapped[int] = mapped_column (ForeignKey("satellites.id"), index=True)
     location_id: Mapped[int] = mapped_column (ForeignKey("locations.id"), index=True)
+    # Allows pass.satellite to get the full Satellite row that satellite_id points to
+    satellite: Mapped["Satellite"] = relationship()
 
     # When it crosses 10 degrees going up, reaches its highest point, and drops below 10 degrees
     rise_time: Mapped[datetime] = mapped_column (DateTime(timezone=True), index=True)
