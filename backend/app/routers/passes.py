@@ -1,5 +1,4 @@
-from datetime import datetime, time, timedelta, timezone
-from zoneinfo import ZoneInfo # Built into Python 
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -7,14 +6,12 @@ from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app.models import Location, Pass, User
 from app.schemas import DayResponse, LocationResponse, PassesResponse, PassResponse
+from app.services.timezones import week_window
 
 router = APIRouter()
 
 # Temporary placeholder untl Clerk auth is added
 TEST_USER_ID = 1
-
-# How many calender days to show, counting today
-DAYS_TO_SHOW = 7
 
 
 @router.get("/api/passes", response_model=PassesResponse)
@@ -29,18 +26,9 @@ def get_passes(db: Session = Depends(get_db)):
     if location is None:
         raise HTTPException(status_code=404, detail="Active location not found")
 
-    # Step 2: work out "today" in the location's timezone, not the server's
+    # Step 2: The local 7 calender days for this location
     tz = ZoneInfo(location.timezone)
-    now = datetime.now(timezone.utc)
-    today = now.astimezone(tz).date()
-
-    # Today plus the next 6 days
-    days = [today + timedelta(days=i) for i in range(DAYS_TO_SHOW)]
-
-    # Midnight (local time) right after the last day. Passes must 
-    # appear before this to be included
-    end_of_window = datetime.combine(days[-1] + timedelta(days=1), time(0), tzinfo=tz)
-
+    now, days, end_of_window = week_window(location.timezone)
 
     # Step 3: fetch this location's passes in one window, earliest first.
     passes = (

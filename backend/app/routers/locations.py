@@ -2,9 +2,14 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Location
-from app.schemas import LocationCreate, LocationResponse
-from app.services.timezones import timezone_for
+from app.models import Location, Pass, User
+from app.schemas import (
+    LocationCreate,
+    LocationListItem,
+    LocationListResponse,
+    LocationResponse,
+)
+from app.services.timezones import timezone_for, week_window
 
 router = APIRouter()
 
@@ -28,3 +33,41 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_location)
     return new_location
+
+
+@router.get("/api/locations", response_model=LocationListResponse)
+def list_locations(db: Session = Depends(get_db)):
+    user = db.get(User, TEST_USER_ID)
+    active_id = user.active_location_id if user else None
+
+    locations = (
+        db.query(Location)
+        .filter(Location.user_id == TEST_USER_ID)
+        .order_by(Location.created_at)
+        .all()
+    )
+
+    items = []
+    for location in locations:
+        now, _, end_of_window = week_window(location.timezone)
+
+        count = (
+            db.query(Pass)
+            .filter(
+                Pass.location_id == location.id,
+                Pass.fade_time >= now,
+                Pass.appear_time < end_of_window,
+            )
+            .count()
+        )
+
+        base = LocationResponse.model_validate(location)
+        items.append(
+            LocationListItem(
+                **base.model_dump(),
+                is_active=(location.id == active_id),
+                passes_this_week=count,
+            )
+        )
+
+    return LocationListResponse(locations=items)

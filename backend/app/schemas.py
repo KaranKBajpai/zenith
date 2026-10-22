@@ -22,6 +22,17 @@ class LocationResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class LocationListItem(LocationResponse):
+    # Inherits every field from LocationResponse, then adds these two
+    is_active: bool
+    # Same 7-day window as the home screen. Numbers should always match
+    passes_this_week: int
+
+
+class LocationListResponse(BaseModel):
+    locations: list[LocationListItem]
+
+
 class SatelliteResponse(BaseModel):
     id: int
     norad_id: int
