@@ -9,6 +9,7 @@ from app.schemas import (
     LocationListResponse,
     LocationResponse,
 )
+from app.services.compute import compute_passes_for_location
 from app.services.timezones import timezone_for, week_window
 
 router = APIRouter()
@@ -19,6 +20,7 @@ TEST_USER_ID = 1
 
 @router.post("/api/locations", response_model=LocationResponse, status_code=201)
 def create_location(location: LocationCreate, db: Session = Depends(get_db)):
+    # Step 1: build the new location row 
     new_location = Location(
         user_id=TEST_USER_ID,
         nickname=location.nickname,
@@ -30,7 +32,31 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db)):
         timezone=timezone_for(location.latitude, location.longitude),
     )
     db.add(new_location)
+
+    # Step 2: if the user has no active location yet, make this one active
+    user = db.get(User, TEST_USER_ID)
+    if user is not None and user.active_location_id is None:
+        # flush() sends the INSERT to Postgres WITHOUT committing, so 
+        # Postgres assigns new_location.id. We need that id right now.
+        db.flush()
+        user.active_location_id = new_location.id
+
+    # Save the location for good 
     db.commit()
+    db.refresh(new_location)
+
+    # Step 3: compute its passes now, so it ins't empty until 4 AM.
+    # If the math fails, the location stays saved and the nightly job
+    # will fill it in later
+    try:
+        compute_passes_for_location(db, new_location)
+        db.commit()
+    except Exception as error:
+        # Throw away any half-written passes from the failed attempt
+        db.rollback()
+        print(f"Pass compute failed for location {new_location.id}: {error}")
+
+    # Reload the row so the response has its saved values.
     db.refresh(new_location)
     return new_location
 
