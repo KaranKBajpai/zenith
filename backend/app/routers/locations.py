@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -97,3 +97,25 @@ def list_locations(db: Session = Depends(get_db)):
         )
 
     return LocationListResponse(locations=items)
+
+
+@router.put("/api/locations/{location_id}/active", response_model=LocationResponse)
+def set_active_location(location_id: int, db: Session = Depends(get_db)):
+    # FastAPI fills location_id from the URL: /api/locations/3/active -> 3
+    location = db.get(Location, location_id)
+
+    # Missing OR someone else's: same 404 either way, so we never reveal
+    # that another user's location exists. 
+    if location is None or location.user_id != TEST_USER_ID:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    user = db.get(User, TEST_USER_ID)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # The actual switch. Passes already exist for every saved location, 
+    # so nothing needs computing
+    user.active_location_id = location.id
+    db.commit()
+    db.refresh(location)
+    return location
