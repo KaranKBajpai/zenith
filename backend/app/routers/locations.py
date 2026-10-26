@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -142,3 +143,43 @@ def rename_location(
     db.commit()
     db.refresh(location)
     return location
+
+
+@router.delete("/api/locations/{location_id}", status_code=204)
+def delete_location(location_id: int, db: Session = Depends(get_db)):
+    location = get_owned_location(db, location_id)
+
+    location_count = (
+        db.query(Location).filter(Location.user_id == TEST_USER_ID).count()
+    )
+    if location_count <= 1:
+        raise HTTPException(
+            status_code=409, detail="You need at least one location"
+        )
+
+    user = db.get(User, TEST_USER_ID)
+    if user is not None and user.active_location_id == location.id:
+        replacement = (
+            db.query(Location)
+            .filter(
+                Location.user_id == TEST_USER_ID,
+                Location.id != location.id,
+            )
+            .order_by(Location.created_at.desc())
+            .first()
+        )
+        user.active_location_id = replacement.id
+        # Send the switch to Postgres NOW. Otherwise the user row still
+        # points at this location when we try to delete it, and the 
+        # foreign key blocks the delete.
+        db.flush()
+
+    # Passes point at this location too, so they go first.
+    db.execute(delete(Pass).where(Pass.location_id == location.id))
+    db.delete(location)
+
+    # One commit for everything: all of it happens, or none of it does.
+    db.commit()
+
+    # 204 = success, nothing to send back.
+    return Response(status_code=204)
