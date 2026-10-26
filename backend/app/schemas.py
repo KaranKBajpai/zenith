@@ -7,6 +7,12 @@ class LocationCreate(BaseModel):
     longitude: float = Field(ge=-180, le=180)
     place_name: str | None = None
 
+    model_config = {"str_strip_whitespace": True}
+
+class LocationUpdate(BaseModel):
+    nickname: str = Field(min_length=1, max_length=100)
+    model_config = {"str_strip_whitespace": True}
+
 
 class LocationResponse(BaseModel):
     id: int

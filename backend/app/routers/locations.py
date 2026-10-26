@@ -8,6 +8,7 @@ from app.schemas import (
     LocationListItem,
     LocationListResponse,
     LocationResponse,
+    LocationUpdate,
 )
 from app.services.compute import compute_passes_for_location
 from app.services.timezones import timezone_for, week_window
@@ -16,6 +17,17 @@ router = APIRouter()
 
 #Temporary placeholder until Clerk auth is added
 TEST_USER_ID = 1
+
+def get_owned_location (db: Session, location_id: int) -> Location:
+    """Return the location if it exists AND belongs to this user.
+    
+    Missing or someone else's: same 404 either way, so we never reveal
+    that another user's location exists. Used by every endpoint that changes one specific location.
+    """
+    location = db.get(Location, location_id)
+    if location is None or location.user_id != TEST_USER_ID:
+        raise HTTPException(status_code=404, detail="Location not found")
+    return location
 
 
 @router.post("/api/locations", response_model=LocationResponse, status_code=201)
@@ -102,20 +114,31 @@ def list_locations(db: Session = Depends(get_db)):
 @router.put("/api/locations/{location_id}/active", response_model=LocationResponse)
 def set_active_location(location_id: int, db: Session = Depends(get_db)):
     # FastAPI fills location_id from the URL: /api/locations/3/active -> 3
-    location = db.get(Location, location_id)
-
-    # Missing OR someone else's: same 404 either way, so we never reveal
-    # that another user's location exists. 
-    if location is None or location.user_id != TEST_USER_ID:
-        raise HTTPException(status_code=404, detail="Location not found")
+    location = get_owned_location(db, location_id)
 
     user = db.get(User, TEST_USER_ID)
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404,  detail="User not found")
 
-    # The actual switch. Passes already exist for every saved location, 
-    # so nothing needs computing
+
+    # The actual switch. Passes already exist for every saved location,
+    # so nothing needs computing.
     user.active_location_id = location.id
+    db.commit()
+    db.refresh(location)
+    return location
+
+@router.patch("/api/locations/{location_id}", response_model=LocationResponse)
+def rename_location(
+    location_id: int,
+    changes: LocationUpdate,
+    db: Session = Depends(get_db),
+):
+    # A blank or too-long name never reaches this line: FastAPI rejects
+    # it with a 422 first, bases on the LocationUpdate rules.
+    location = get_owned_location(db, location_id)
+
+    location.nickname = changes.nickname
     db.commit()
     db.refresh(location)
     return location
