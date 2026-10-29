@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, Response
+from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import FollowedSatellite, Satellite, Location
+from app.models import FollowedSatellite, Satellite, Location, Pass
 from app.schemas import SatelliteListItem, SatelliteListResponse, SatelliteResponse
 from app.services.compute import compute_passes_for
 
@@ -70,3 +70,32 @@ def follow_satellite(satellite_id: int, db: Session = Depends(get_db)):
         **SatelliteResponse.model_validate(satellite).model_dump(),
         is_followed=True,
     )
+
+
+@router.delete("/api/satellites/{satellite_id}/follow", status_code=204)
+def unfollow_satellite(satellite_id: int, db: Session = Depends(get_db)):
+    satellite = db.get(Satellite, satellite_id)
+    if satellite is None:
+        raise HTTPException(status_code=404, detail="Satellite not found")
+
+    # Remove the follow row
+    db.execute(
+        delete(FollowedSatellite).where(
+            FollowedSatellite.user_id == TEST_USER_ID,
+            FollowedSatellite.satellite_id == satellite_id,
+        )
+    )
+
+    # Remove this satellite's passes, but only at this user's locations.
+    my_location_ids = select(Location.id).where(Location.user_id == TEST_USER_ID)
+    db.execute(
+        delete(Pass).where(
+            Pass.satellite_id == satellite_id,
+            Pass.location_id.in_(my_location_ids),
+        )
+    )
+
+    db.commit()
+
+    # 204 = done, nothing to send back.
+    return Response(status_code=204)
