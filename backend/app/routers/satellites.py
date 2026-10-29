@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import FollowedSatellite, Satellite
+from app.models import FollowedSatellite, Satellite, Location
 from app.schemas import SatelliteListItem, SatelliteListResponse, SatelliteResponse
+from app.services.compute import compute_passes_for
 
 router = APIRouter()
 
@@ -36,3 +37,36 @@ def list_satellites(db: Session = Depends(get_db)):
         for s in satellites
     ]
     return SatelliteListResponse(satellites=items)
+
+
+@router.put("/api/satellites/{satellite_id}/follow", response_model=SatelliteListItem)
+def follow_satellite(satellite_id: int, db: Session = Depends(get_db)):
+    satellite = db.get(Satellite, satellite_id)
+    if satellite is None:
+        raise HTTPException(status_code=404, detail="Satellite not found")
+
+    # Find the follow row for (this user, this satellite), if it exists.
+    existing = db.get(FollowedSatellite, (TEST_USER_ID, satellite_id))
+
+    # Already following? Nothing to save or compute
+    if existing is None:
+        db.add(FollowedSatellite(user_id=TEST_USER_ID, satellite_id=satellite_id))
+        db.commit()
+
+        # Compute passes for just this satellite at every saved location
+        try:
+            locations = db.scalars(
+                select(Location).where(Location.user_id == TEST_USER_ID)
+            ).all()
+            for location in locations:
+                compute_passes_for(db, location, satellite)
+            db.commit()
+        except Exception as error:
+            # Throw away half-written passes. Nightly job filles in the passes later.
+            db.rollback()
+            print(f"Pass compute failed for satellite {satellite_id}: {error}")
+
+    return SatelliteListItem(
+        **SatelliteResponse.model_validate(satellite).model_dump(),
+        is_followed=True,
+    )
