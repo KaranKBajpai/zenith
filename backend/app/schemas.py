@@ -47,8 +47,13 @@ class SatelliteResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class SatelliteListItem(SatelliteResponse):
+    # Adds whether this user follows the specific satellite
+    is_followed: bool
+
+
 class SatelliteListResponse(BaseModel):
-    satellites: list[SatelliteResponse]
+    satellites: list[SatelliteListItem]
 
 
 class PassResponse(BaseModel):
