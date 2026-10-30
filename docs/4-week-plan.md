@@ -35,14 +35,14 @@
 - [x] Passes table populated with real, computed data — `GET /api/passes` switched from mock to real: active location, 7 local calendar days (empty days included), grouped by appear time in the location's timezone
 - [x] Location CRUD fully working against the real database, including switching the active location — list (active flag + weekly pass count), create (passes computed immediately, first location auto-active), switch active, rename, delete (active reassigned, last location protected)
 - [x] Followed satellites: get my list, follow, unfollow — each one triggering a recompute of that user's passes — is_followed flag on the catalog, PUT/DELETE /api/satellites/{id}/follow, repeats succeed, unfollow only touches this user's passes
-- [ ] Frontend project scaffolded: Vite + React + TypeScript, connected to backend
+- [x] Frontend project scaffolded: Vite + React + TypeScript, connected to backend — Oxlint, VITE_API_URL setting, shared apiGet helper, test page shows live data from GET /api/passes
 - [x] **CORS configured for local development** so the frontend can call the backend — origins read from `FRONTEND_ORIGINS`, defaults to `localhost:5173`
-- [ ] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
 
 ---
 
 ## Week 3 — Frontend build-out
 
+- [ ] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
 - [ ] Navigation pattern (navbar) built as a shared component first
 - [ ] Signed-Out Landing built
 - [ ] Home (week view) built
