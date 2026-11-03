@@ -97,3 +97,67 @@
     margin-top: 20px;
     font-size: 14px;
 }
+
+/* Title on the left, "+ Add" on the right */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.add-button {
+    padding: 8px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    cursor: pointer;
+}
+
+/* Add panel */
+.add-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.close-button {
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.add-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 14px 16px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.add-row.followed {
+    border-color: var(--border);
+    background: var(--accent-soft);
+}
+
+.add-name {
+    flex: 1; /* take up the space, pushing "Saving…" to the right */
+    font-size: 17px;
+}
+
+.add-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { apiDelete, apiGet } from "./api";
+import { apiDelete, apiGet, apiPut } from "./api";
 import type { PassesResponse, SatelliteListResponse } from "./types";
 import { plural } from "./format";
 import SatelliteCard from "./SatelliteCard";
+import AddSatellites from "./AddSatellites";
 import "./Satellites.css";
 
 function Satellites() {
@@ -18,6 +19,9 @@ function Satellites() {
     // Bumping this number makes the useEffect below run again (refetch).
     const [reloadKey, setReloadKey] = useState(0);
 
+    // true = show the Add panel instead of the list
+    const [showAdd, setShowAdd] = useState(false);
+
     // Runs on the first draw AND again whenever reloadKey changes.
     useEffect(() => {
         Promise.all([
@@ -31,17 +35,21 @@ function Satellites() {
             .catch((err) => setError(String(err)));
     }, [reloadKey]);
 
-    // async = this function can "await" the server before moving on.
-    async function unfollow(satelliteId: number) {
+    // Follow (true) or unfollow (false), then refetch so the screen
+    // shows what the server actually saved.
+    async function setFollow(satelliteId: number, follow: boolean) {
         setBusyId(satelliteId);
         try {
-            await apiDelete(`/api/satellites/${satelliteId}/follow`);
-            // Refetch, so the screen shows what the server now has.
+            if (follow) {
+                await apiPut(`/api/satellites/${satelliteId}/follow`);
+            } else {
+                await apiDelete(`/api/satellites/${satelliteId}/follow`);
+            }
             setReloadKey((key) => key + 1);
         } catch (err) {
             setError(String(err));
         } finally {
-            // Runs whether it worked or failed: re-enable the button.
+            // Runs whether it worked or failed: re-enable the buttons.
             setBusyId(null);
         }
     }
@@ -66,17 +74,39 @@ function Satellites() {
     const followed = satellites.satellites.filter((s) => s.is_followed);
     const allPasses = passes.days.flatMap((day) => day.passes);
 
+    // The Add panel replaces the list while it's open.
+    if (showAdd) {
+        return (
+            <main className="page">
+                <AddSatellites
+                    satellites={satellites.satellites}
+                    busyId={busyId}
+                    // Ticked -> unfollow, unticked -> follow
+                    onToggle={(s) => setFollow(s.id, !s.is_followed)}
+                    onClose={() => setShowAdd(false)}
+                />
+            </main>
+        );
+    }
+
     return (
         <main className="page">
             <Link to="/" className="back-link">
                 ← Your week
             </Link>
 
-            <h1 className="page-title">Followed satellites</h1>
-            <p className="location-meta">
-                {plural(followed.length, "satellite")} · passes shown for{" "}
-                {passes.location.nickname}
-            </p>
+            <div className="page-header">
+                <div>
+                    <h1 className="page-title">Followed satellites</h1>
+                    <p className="location-meta">
+                        {plural(followed.length, "satellite")} · passes shown for{" "}
+                        {passes.location.nickname}
+                    </p>
+                </div>
+                <button type="button" className="add-button" onClick={() => setShowAdd(true)}>
+                    + Add
+                </button>
+            </div>
 
             <div className="section-heading list-heading">
                 <span className="section-title">Your list</span>
@@ -94,7 +124,7 @@ function Satellites() {
                         passes={allPasses.filter((p) => p.satellite.id === s.id)}
                         timeZone={tz}
                         busy={busyId === s.id}
-                        onUnfollow={() => unfollow(s.id)}
+                        onUnfollow={() => setFollow(s.id, false)}
                     />
                 ))
             )}

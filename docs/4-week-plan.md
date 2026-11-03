@@ -45,12 +45,12 @@
 - [ ] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
 - [ ] Navigation pattern (navbar) built as a shared component first
 - [ ] Signed-Out Landing built
-- [ ] Home (week view) built
-- [ ] Quality label (Excellent / Good / Fair) based on brightness, not max altitude
+- [x] Home (week view) built — real passes for the active location, 7 local calendar days, next-pass countdown, timezone banner when the location's zone differs from the device's
+- [x] Quality label (Excellent / Good / Fair) based on brightness, not max altitude — cutoffs: -2.0 or brighter / down to 0.0 / dimmer
 - [ ] Pass Detail built
 - [ ] Sky Map built
 - [ ] Onboarding built
-- [ ] Followed Satellites built
+- [x] Followed Satellites built — per-satellite week stats, expandable pass list, unfollow, Add panel with checkboxes (search, categories and descriptions wait for the bigger catalog)
 - [ ] Saved Locations built
 - [ ] Settings built
 - [ ] **Desktop / wide-screen layout** — mobile layout first, then widen each screen
