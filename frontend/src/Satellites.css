@@ -1,0 +1,99 @@
+.page-title {
+    margin: 16px 0 4px;
+    font-size: 28px;
+}
+
+.list-heading {
+    margin-top: 24px;
+}
+
+/* Satellite card */
+.sat-card {
+    margin-bottom: 8px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--card);
+}
+
+/* The clickable top of the card. Buttons have default browser styling,
+   so this resets it to look like plain card content. */
+.sat-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    padding: 14px 16px 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.chevron {
+    color: var(--muted);
+}
+
+.sat-stats {
+    display: flex;
+    gap: 28px;
+    padding: 12px 16px 14px;
+}
+
+.stat-label {
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Expanded part */
+.sat-expanded {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+}
+
+.pass-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 6px;
+    background: var(--bg);
+    font-size: 15px;
+}
+
+.pass-row-day {
+    width: 40px;
+    color: var(--muted);
+    text-transform: uppercase;
+}
+
+.sat-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+}
+
+.unfollow-button {
+    padding: 6px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    cursor: pointer;
+}
+
+.unfollow-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.note {
+    margin-top: 20px;
+    font-size: 14px;
+}

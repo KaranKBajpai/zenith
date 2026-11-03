@@ -108,3 +108,11 @@ export function plural(count: number, word: string): string {
     return `${count} ${word}${word.endsWith("s") ? "es" : "s"}`;
 }
 
+// "2026-11-04T04:50:00Z" in "America/Los_Angeles" -> "Tue"
+// No date trap here: this is a full moment in time, so showing it in the
+// location's timezone gives the right day.
+export function formatWeekdayShort(iso: string, timeZone: string): string {
+    return new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone }).format(
+        new Date(iso)
+    );
+}

@@ -16,3 +16,21 @@ export async function apiGet<T>(path: string): Promise<T> {
 
     return (await response.json()) as T;
 }
+
+// Call a PUT endpoint (e.g. follow) and return its JSON.
+export async function apiPut<T>(path: string): Promise<T> {
+    const response = await fetch(`${API_URL}${path}`, { method: "PUT" });
+    if (!response.ok) {
+        throw new Error(`PUT ${path} failed with status ${response.status}`);
+    }
+    return (await response.json()) as T;
+}
+
+// Call a DELETE endpoint (e.g. unfollow). Returns nothing:
+// the backend answers 204 No Content, so there's no body to read.
+export async function apiDelete(path: string): Promise<void> {
+    const response = await fetch(`${API_URL}${path}`, { method: "DELETE" });
+    if (!response.ok) {
+        throw new Error(`DELETE ${path} failed with status ${response.status}`);
+    }
+}
