@@ -80,3 +80,31 @@ export function formatDayHeading(dateString: string): { weekday: string; monthDa
 export function todayIn(timeZone: string): string {
     return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
 }
+
+// "In 9h 10m" style countdown to an ISO time. Returns "Now" if it has started
+export function timeUntil (iso: string): string {
+    const minutes = Math.round((Date.parse(iso) - Date.now()) / 60_000);
+    if (minutes <= 0) {
+        return "now";
+    }
+    const hours = Math.floor(minutes / 60);
+    if (hours >= 24) {
+        return `${Math.floor(hours / 24)}d ${hours % 24}h`;
+    }
+    return hours > 0 ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+}
+
+// 45.52, -122.68 -> "45.5200° N, 122.6800° W"
+export function formatCoordinates(latitude: number, longitude: number): string {
+    const northSouth = latitude >= 0 ? "N" : "S";
+    const eastWest = longitude >= 0 ? "E" : "W";
+    return `${Math.abs(latitude).toFixed(4)}° ${northSouth}, ${Math.abs(longitude).toFixed(4)}° ${eastWest}`;
+}
+
+export function plural(count: number, word: string): string {
+    if (count === 1) {
+        return `${count} ${word}`;
+    }
+    return `${count} ${word}${word.endsWith("s") ? "es" : "s"}`;
+}
+

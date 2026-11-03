@@ -1,0 +1,174 @@
+/* Phone-width column, centered: on a laptop, the app looks like the mobile mockups. */
+.page {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+}
+
+.message {
+    color: var(--muted);
+}
+
+/* Header */
+.eyebrow {
+    margin: 0;
+    color: var(--accent);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.location-name {
+    margin: 4px 0 2px;
+    font-size: 28px;
+}
+
+.location-meta {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.summary {
+    margin: 20px 0 8px;
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+.next-pass {
+    margin: 0 0 20px;
+    color: var(--accent);
+}
+
+/* Timezone banner */
+.tz-banner {
+    margin-bottom: 24px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--accent-soft);
+    font-size: 14px;
+}
+
+/* Week list */
+.section-heading,
+.day-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.section-heading {
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.section-title {
+    color: var(--text);
+}
+
+.day {
+    margin-top: 16px;
+}
+
+.day-heading {
+    margin-bottom: 6px;
+}
+
+.day-name {
+    margin-right: 6px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.day-name.today {
+    color: var(--accent);
+}
+
+.empty {
+    margin: 4px 0 0 16px;
+    color: var(--muted);
+    font-size: 15px;
+}
+
+/* Pass card */
+.pass-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: var(--card);
+}
+
+.pass-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pass-name {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.pass-tag {
+    padding: 1px 8px;
+    border: 1px solid var(--muted);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.pass-details {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.quality-excellent {
+    color: var(--good);
+}
+
+.quality-good {
+    color: var(--text);
+}
+
+.pass-time {
+    text-align: right;
+    white-space: nowrap; /* keep "10:05pm" on one line */
+}
+
+.pass-clock {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.pass-meta {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.footer-link {
+    color: var(--accent);
+}
