@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { apiGet } from "./api";
 import type { PassesResponse, SatelliteListResponse } from "./types";
 import {
@@ -147,7 +148,9 @@ function Home() {
             {followedCount !== null && (
                 <div className="footer">
                     <span>Following {plural(followedCount, "satellite")}</span>
-                    <span className="footer-link">Manage satellites</span>
+                    <Link to="/satellites" className="footer-link">
+                        Manage satellites
+                    </Link>
                 </div>
             )}
         </main>

@@ -171,4 +171,11 @@
 
 .footer-link {
     color: var(--accent);
+    text-decoration: none; /* links are underlined by default */
+}
+
+.back-link {
+    color: var(--muted);
+    font-size: 15px;
+    text-decoration: none;
 }
