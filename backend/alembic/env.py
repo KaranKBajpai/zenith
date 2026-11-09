@@ -5,9 +5,11 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# Our own code: the database address (read from .env) and the Base
-# that every model inherits from
-from app.database import Base, DATABASE_URL
+# Our own code: the app's settings (the database address comes from here)
+# and the Base that every model inherits from. We import "settings", not
+# "config", because this file already uses the name config for Alembic's own.
+from app.config import settings
+from app.database import Base
 
 # Importing models makes all five classes register themselves with Base.
 # Without this line, Alembic would think you have zero tables. 
@@ -21,7 +23,7 @@ config = context.config
 
 # Hand Alembic the database address from .env, instead 
 # of writing the password into alembic.ini (which gets committed to github)
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.database_url)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

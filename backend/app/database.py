@@ -1,16 +1,11 @@
-import os
-
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-load_dotenv()
+from app.config import settings
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not set. Check backend/.env")
-
-engine = create_engine(DATABASE_URL)
+# The database address comes from config.py, which already checked it's set:
+# if DATABASE_URL were missing, the app would have stopped before reaching here.
+engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

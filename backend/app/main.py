@@ -1,14 +1,11 @@
-import os
 from contextlib import asynccontextmanager
 
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.routers import health, locations, passes, satellites
 from app.scheduler import start_scheduler, stop_scheduler
-
-load_dotenv()
 
 
 @asynccontextmanager
@@ -23,10 +20,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Zenith API", lifespan=lifespan)
 
 # Which websites (origins) are allowed to call this API from a browser.
-# Read from .env, so the deployed frontend's address can be added at a later date
-# without changing any code. If it's not set, default to the vite dev server on 
-# mac. Multiple origins can be listed, separated by commas.
-allowed_origins = os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
+# Set in config.py from FRONTEND_ORIGINS, so the deployed frontend's address
+# can be added later without changing code.
+allowed_origins = settings.frontend_origin_list
 
 app.add_middleware(
     CORSMiddleware,

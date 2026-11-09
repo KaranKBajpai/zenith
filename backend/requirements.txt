@@ -19,6 +19,7 @@ numpy==2.5.3
 psycopg2-binary==2.9.13
 pycparser==3.11
 pydantic==2.13.5
+pydantic-settings==2.16.2
 pydantic_core==2.46.5
 python-dotenv==1.2.3
 requests==2.34.2
