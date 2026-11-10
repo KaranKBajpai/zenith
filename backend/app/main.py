@@ -4,8 +4,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.log_setup import setup_logging
 from app.routers import health, locations, passes, satellites
 from app.scheduler import start_scheduler, stop_scheduler
+
+# Set up logging before anything else runs, so every message is formatted.
+setup_logging()
 
 
 @asynccontextmanager

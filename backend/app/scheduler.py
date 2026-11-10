@@ -1,5 +1,6 @@
 """Runs Zenith's background jobs on a timer, using APScheduler."""
 
+import logging
 from datetime import datetime, timezone
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -12,6 +13,8 @@ from app.services.compute import compute_all_passes
 # serparate thread, so the web server keeps answering requests meanwhile.
 scheduler = BackgroundScheduler()
 
+logger = logging.getLogger(__name__)
+
 
 def nightly_job():
     """Fetch fresh orbital data, then recompute everyone's passes."""
@@ -23,11 +26,11 @@ def nightly_job():
         refresh_catalog_tles(db)
         # 2. Compute passes
         total = compute_all_passes(db)
-        print (f"Nightly job: saved {total} passes")
-    except Exception as e:
+        logger.info("Nightly job: saved %s passes", total)
+    except Exception:
         # If the job fails, the web server must keep running. 
-        # Report it, and tomorrow's run will try again
-        print(f"Nightly job failed: {e}")
+        # ERROR level with the full traceback, and tomorrow's run tries again
+        logger.exception("Nightly job failed")
     finally:
         # Anything not committed gets thrown away, so a failed
         # run never leaves half-saved passes behind.

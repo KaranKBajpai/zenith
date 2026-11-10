@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
@@ -15,6 +16,10 @@ from app.services.compute import compute_passes_for_location
 from app.services.timezones import timezone_for, week_window
 
 router = APIRouter()
+
+# __name__ is this file's module name, "app.routers.locations",
+# so every line this logger writes says where it came from.
+logger = logging.getLogger(__name__)
 
 #Temporary placeholder until Clerk auth is added
 TEST_USER_ID = 1
@@ -64,10 +69,10 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db)):
     try:
         compute_passes_for_location(db, new_location)
         db.commit()
-    except Exception as error:
+    except Exception:
         # Throw away any half-written passes from the failed attempt
         db.rollback()
-        print(f"Pass compute failed for location {new_location.id}: {error}")
+        logger.exception("Pass compute failed for location %s", new_location.id)
 
     # Reload the row so the response has its saved values.
     db.refresh(new_location)

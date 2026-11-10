@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ from app.schemas import SatelliteListItem, SatelliteListResponse, SatelliteRespo
 from app.services.compute import compute_passes_for
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Temporary placeholder until Clerk auth is added
 TEST_USER_ID = 1
@@ -61,10 +63,10 @@ def follow_satellite(satellite_id: int, db: Session = Depends(get_db)):
             for location in locations:
                 compute_passes_for(db, location, satellite)
             db.commit()
-        except Exception as error:
+        except Exception:
             # Throw away half-written passes. Nightly job filles in the passes later.
             db.rollback()
-            print(f"Pass compute failed for satellite {satellite_id}: {error}")
+            logger.exception("Pass compute failed for satelltie %s", satellite_id)
 
     return SatelliteListItem(
         **SatelliteResponse.model_validate(satellite).model_dump(),

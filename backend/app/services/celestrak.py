@@ -1,5 +1,6 @@
 """Download orbital data (TLEs) from CelesTrak"""
 
+import logging
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -8,7 +9,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
+from app.log_setup import setup_logging
 from app.models import Satellite
+
+logger = logging.getLogger(__name__)
 
 # CelesTrak's "GP" endpoint. CATNR = the NORAD number,
 # FORMAT=TLE = the classic two-line format the Satellite table stores.
@@ -53,10 +57,13 @@ def fetch_tle(norad_id):
                 if len(lines) == 3 and lines[1].startswith("1 ") and lines[2].startswith("2 "):
                     return lines[1], lines[2]
 
-            print(f"Attempt {attempt} for {norad_id}: bad reply (status {r.status_code})")
+            # Warning
+            logger.warning(
+                "Attempt %s for %s: bad reply (status %s)", attempt, norad_id, r.status_code
+            )
         except requests.RequestException as e:
             # Network problems: no internet, a timeout, etc.
-            print(f"Attempt {attempt} for {norad_id}: request failed ({e})")
+            logger.warning("Attempt %s for %s: request failed (%s)", attempt, norad_id, e)
 
         # Wait before trying again, but not after the last attempt
         if attempt < MAX_ATTEMPTS:
@@ -83,7 +90,8 @@ def refresh_catalog_tles(db: Session):
         # Updated recently? Then CelesTrak has nothing newer. Skip it.
         # (tle_updated_at is None for a satellite that's never been fetched)
         if satellite.tle_updated_at is not None and now - satellite.tle_updated_at < REFRESH_INTERVAL:
-            print(f"Skipped {satellite.name}: updated less than 2 hours ago")
+            # DEBUG: routine and noisy, hidden unless LOG_LEVEL=DEBUG
+            logger.debug("Skipped %s: updated less than 2 hours ago", satellite.name)
             continue
 
         try:
@@ -91,19 +99,20 @@ def refresh_catalog_tles(db: Session):
         except RuntimeError as e:
             # All retries failed. Keep this satellite's old data and move on,
             # so one bad satellite doesn't stop the rest from updating.
-            print(f"Kept old data for {satellite.name}: {e}")
+            logger.warning("Kept old data for %s: %s", satellite.name, e)
             continue
 
         satellite.tle_line1 = line1
         satellite.tle_line2 = line2
         satellite.tle_updated_at = now
-        print(f"Updated {satellite.name}")
+        logger.info("Updated %s", satellite.name)
 
     # Save every change at once
     db.commit()
 
 # Lets you run this by hand: python -m app.services.celestrak
 if __name__ == "__main__":
+    setup_logging()
     db = SessionLocal()
     try:
         refresh_catalog_tles(db)
