@@ -94,4 +94,17 @@ class PassesResponse(BaseModel):
     location: LocationResponse
     days: list[DayResponse]
 
-    
+
+class GeocodeResult(BaseModel):
+    name: str
+    latitude: float
+    longitude: float
+
+
+class GeocodeSearchResponse(BaseModel):
+    results: list[GeocodeResult]
+
+
+class ReverseGeocodeResponse(BaseModel):
+    # None if Nominatim found no town name for that spot
+    name: str | None

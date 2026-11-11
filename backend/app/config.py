@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     # How much the app logs: DEBUG, INFO, WARNING, or ERROR
     log_level: str = "INFO"
 
+    # Sent to Nominatim (OpenStreetMap's geocoder)
+    nominatim_contact_email: str | None = None
+
+    # Turns location search off without a code change. Nominatim's policy
+    # requires that apps can switch it off if they ask.
+    geocoding_enabled: bool = True
+
     @property
     def frontend_origin_list(self) -> list[str]:
         """frontend_origins split into a list, with spaces and blanks removed."""

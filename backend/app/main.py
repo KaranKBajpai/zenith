@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.log_setup import setup_logging
-from app.routers import health, locations, passes, satellites
+from app.routers import geocode, health, locations, passes, satellites
 from app.scheduler import start_scheduler, stop_scheduler
 
 # Set up logging before anything else runs, so every message is formatted.
@@ -40,3 +40,4 @@ app.include_router(health.router)
 app.include_router(passes.router)
 app.include_router(locations.router)
 app.include_router(satellites.router)
+app.include_router(geocode.router)
