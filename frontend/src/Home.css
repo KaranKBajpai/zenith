@@ -179,3 +179,10 @@
     font-size: 15px;
     text-decoration: none;
 }
+
+/* The "Saved place" header is a link, but shouldn't look like one */
+.location-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}

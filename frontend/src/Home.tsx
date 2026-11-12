@@ -71,9 +71,11 @@ function Home() {
 
     return (
         <main className="page">
-            {/* Header: which place, where it is, its current time zone */}
-            <p className="eyebrow">Saved place</p>
-            <h1 className="location-name">{location.nickname}</h1>
+            {/* The header is the way into Saved Locations */}
+            <Link to="/locations" className="location-link">
+                <p className="eyebrow">Saved place</p>
+                <h1 className="location-name">{location.nickname}</h1>
+            </Link>
             <p className="location-meta">
                 {formatCoordinates(location.latitude, location.longitude)} ·{" "}
                 {timeZoneAbbreviation(tz)}
