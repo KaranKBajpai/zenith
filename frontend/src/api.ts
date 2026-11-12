@@ -70,6 +70,20 @@ export async function apiPatch<T>(path: string, body: unknown): Promise<T> {
     return (await response.json()) as T;
 }
 
+// Call a POST endpoint (create something) with a JSON body, and return
+// the JSON the backend sends back. Same as apiPatch, different method.
+export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+    const response = await fetch(`${API_URL}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        throw await requestError("POST", path, response);
+    }
+    return (await response.json()) as T;
+}
+
 // Call a DELETE endpoint (e.g. unfollow, remove location). Returns nothing:
 // the backend answers 204 No Content, so there's no body to read.
 export async function apiDelete(path: string): Promise<void> {

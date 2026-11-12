@@ -71,3 +71,19 @@ export type LocationListItem = Location & {
 export type LocationListResponse = {
     locations: LocationListItem[];
 };
+
+// GET /api/geocode/search
+export type GeocodeResult = {
+    name: string; // e.g. "Bozeman, Montana, US"
+    latitude: number;
+    longitude: number;
+};
+
+export type GeocodeSearchResponse = {
+    results: GeocodeResult[];
+};
+
+// GET /api/geocode/reverse
+export type ReverseGeocodeResponse = {
+    name: string | null; // null if OpenStreetMap has no town there
+};

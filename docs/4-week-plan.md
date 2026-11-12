@@ -51,7 +51,7 @@
 - [ ] Sky Map built
 - [ ] Onboarding built
 - [x] Followed Satellites built — per-satellite week stats, expandable pass list, unfollow, Add panel with checkboxes (search, categories and descriptions wait for the bigger catalog)
-- [ ] Saved Locations built
+- [x] Saved Locations built — switch active place, rename, remove (last place can't be removed), add by search or current location via Nominatim (search on submit only, results cached, OpenStreetMap credited), device coordinates rounded to ~1 km
 - [ ] Settings built
 - [ ] **Desktop / wide-screen layout** — mobile layout first, then widen each screen
 - [ ] Frontend wired to real backend endpoints, not mock data

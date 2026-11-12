@@ -4,6 +4,7 @@ import { apiDelete, apiGet, apiPatch, apiPut, errorText } from "./api";
 import type { Location, LocationListResponse } from "./types";
 import { formatCoordinates, plural } from "./format";
 import PlaceEditPanel from "./PlaceEditPanel";
+import AddPlacePanel from "./AddPlacePanel";
 import "./Locations.css";
 
 function Locations() {
@@ -17,6 +18,7 @@ function Locations() {
     const [editError, setEditError] = useState<string | null>(null);
     // Bumping this number reruns the effect below, which refetches the list.
     const [reloadKey, setReloadKey] = useState(0);
+    const [adding, setAdding] = useState(false);
     const navigate = useNavigate();
 
     // Runs after the first draw, and again every time reloadKey changes.
@@ -178,6 +180,28 @@ function Locations() {
                 </div>
             ))}
 
+            {adding ? (
+                <AddPlacePanel
+                    onAdded={() => {
+                        setAdding(false);
+                        // Refetch so the new place shows up in the list.
+                        setReloadKey((k) => k + 1);
+                    }}
+                    onCancel={() => setAdding(false)}
+                />
+            ) : (
+                <button
+                    className="add-place"
+                    onClick={() => {
+                        setAdding(true);
+                        stopEditing(); // close any open pencil panel
+                    }}
+                    disabled={busyId !== null}
+                >
+                    + Add a place
+                </button>
+            )}
+            
             <p className="message note">
                 Switching places changes your whole week. Times are always local to the
                 place you're watching from.

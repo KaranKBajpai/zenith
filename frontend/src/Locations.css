@@ -207,3 +207,85 @@
     font-size: 14px;
     color: #f87171;
 }
+
+/* ---- Add a place ---- */
+
+.add-place {
+    width: 100%;
+    margin-top: 4px;
+    padding: 14px;
+    font: inherit;
+    border-radius: 12px;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    background: transparent;
+    color: inherit;
+    opacity: 0.8;
+    cursor: pointer;
+}
+
+.add-place:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.add-heading {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Search box and button side by side; the box takes the spare room. */
+.add-search {
+    display: flex;
+    gap: 8px;
+}
+
+.add-search .edit-input {
+    flex: 1;
+    min-width: 0; /* lets the box shrink on narrow phones */
+}
+
+.add-results {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.add-result {
+    text-align: left;
+    font: inherit;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: inherit;
+    cursor: pointer;
+}
+
+.add-result:hover:not(:disabled) {
+    border-color: #a78bfa;
+}
+
+.add-confirm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.add-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.add-credit {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.add-credit a {
+    color: inherit;
+}

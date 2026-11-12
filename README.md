@@ -65,3 +65,8 @@ npm install
 npm run dev
 ```
 Open http://localhost:5173, go to **Manage satellites → + Add**, and follow a satellite to see its passes.
+
+## Credits
+
+- **Place search and town names:** © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), via [Nominatim](https://nominatim.org/). Map data is available under the Open Database License (ODbL).
+- **Satellite orbit data:** [CelesTrak](https://celestrak.org/).
