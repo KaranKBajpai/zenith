@@ -1,36 +1,86 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { apiGet, apiPut } from "./api";
-import type { LocationListResponse } from "./types";
-import { formatCoordinates, plural } from "./format"; 
-import "./Locations.css"
+import { apiDelete, apiGet, apiPatch, apiPut, errorText } from "./api";
+import type { Location, LocationListResponse } from "./types";
+import { formatCoordinates, plural } from "./format";
+import PlaceEditPanel from "./PlaceEditPanel";
+import "./Locations.css";
 
 function Locations() {
     const [data, setData] = useState<LocationListResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
-
-    // Which place is being switched to (null = none). Disables the rows.
     const [busyId, setBusyId] = useState<number | null>(null);
-
-    // Navigate("/") = go to Home, the code version of clicking a link
+    // Which place's pencil panel is open. null = none. One at a time.
+    const [editingId, setEditingId] = useState<number | null>(null);
+    // Error from a failed rename/remove, shown inside the panel
+    // instead of replacing the whole page.
+    const [editError, setEditError] = useState<string | null>(null);
+    // Bumping this number reruns the effect below, which refetches the list.
+    const [reloadKey, setReloadKey] = useState(0);
     const navigate = useNavigate();
 
-    // Runs once when the page appears
+    // Runs after the first draw, and again every time reloadKey changes.
     useEffect(() => {
         apiGet<LocationListResponse>("/api/locations")
-        .then(setData)
-        .catch((err) => setError(String(err)));
-    }, []);
+            .then(setData)
+            .catch((err) => setError(errorText(err)));
+    }, [reloadKey]);
 
-    // Make a place active, then go back to the week view
     async function switchTo(locationId: number) {
         setBusyId(locationId);
         try {
             await apiPut(`/api/locations/${locationId}/active`);
+            // Success: we leave the page, so no need to reset busyId.
             navigate("/");
         } catch (err) {
-            setError(String(err));
-            setBusyId(null); // only needed on failure: on success we've left the page
+            setError(errorText(err));
+            setBusyId(null);
+        }
+    }
+
+    // Open a place's panel (or close it if it's already open).
+    function toggleEditing(locationId: number) {
+        setEditingId(editingId === locationId ? null : locationId);
+        setEditError(null);
+    }
+
+    function stopEditing() {
+        setEditingId(null);
+        setEditError(null);
+    }
+
+    async function rename(locationId: number, nickname: string) {
+        setBusyId(locationId);
+        setEditError(null);
+        try {
+            // Sends {"nickname": "..."}, which FastAPI reads as LocationUpdate.
+            await apiPatch<Location>(`/api/locations/${locationId}`, { nickname });
+            setEditingId(null);
+            // (k) => k + 1 means "one more than whatever it is now".
+            setReloadKey((k) => k + 1);
+        } catch (err) {
+            // Panel stays open so the user can fix it and try again.
+            setEditError(errorText(err));
+        } finally {
+            // finally runs after try OR catch. We stay on this page either
+            // way, so the buttons always need unlocking.
+            setBusyId(null);
+        }
+    }
+
+    async function remove(locationId: number) {
+        setBusyId(locationId);
+        setEditError(null);
+        try {
+            await apiDelete(`/api/locations/${locationId}`);
+            setEditingId(null);
+            // If this was the active place, the backend already picked
+            // a new one. The refetch shows which.
+            setReloadKey((k) => k + 1);
+        } catch (err) {
+            setEditError(errorText(err));
+        } finally {
+            setBusyId(null);
         }
     }
 
@@ -71,39 +121,61 @@ function Locations() {
             </div>
 
             {locations.map((location) => (
-                <button
-                    key={location.id}
-                    type="button"
-                    className={location.is_active ? "place-row active" : "place-row"}
-                    // Already active? Just go back. Otherwise switch first.
-                    onClick={() =>
-                        location.is_active ? navigate("/") : switchTo(location.id)
-                    }
-                    disabled={busyId !== null}
-                >
-                    <span className="place-check">{location.is_active ? "✓" : ""}</span>
+                // One wrapper per place: the row line, plus its panel when open.
+                <div key={location.id} className="place-item">
+                    {/* A button can't hold another button, so the row and the
+                        pencil sit side by side in this wrapper. */}
+                    <div className="place-line">
+                        <button
+                            className={location.is_active ? "place-row active" : "place-row"}
+                            onClick={() =>
+                                location.is_active ? navigate("/") : switchTo(location.id)
+                            }
+                            disabled={busyId !== null}
+                        >
+                            <span className="place-check">{location.is_active && "✓"}</span>
+                            <span className="place-info">
+                                <span className="place-title">
+                                    <span className="place-name">{location.nickname}</span>
+                                    {location.is_active && (
+                                        <span className="pass-tag">Watching from here</span>
+                                    )}
+                                </span>
+                                <span className="place-sub">
+                                    {location.place_name ??
+                                        formatCoordinates(location.latitude, location.longitude)}
+                                </span>
+                                <span className="place-sub">
+                                    {busyId === location.id && editingId === null
+                                        ? "Switching…"
+                                        : `${plural(location.passes_this_week, "pass")} this week`}
+                                </span>
+                            </span>
+                        </button>
 
-                    <span className="place-info">
-                        <span className="place-title">
-                            <span className="place-name">{location.nickname}</span>
-                            {location.is_active && (
-                                <span className="pass-tag">Watching from here</span>
-                            )}
-                        </span>
+                        <button
+                            className="place-edit"
+                            // Screen readers read this, since ✎ alone means nothing.
+                            aria-label={`Edit ${location.nickname}`}
+                            onClick={() => toggleEditing(location.id)}
+                            disabled={busyId !== null}
+                        >
+                            ✎
+                        </button>
+                    </div>
 
-                        {/* ?? = use place_name, unless it's empty, then the coordinates */}
-                        <span className="place-sub">
-                            {location.place_name ??
-                                formatCoordinates(location.latitude, location.longitude)}
-                        </span>
-
-                        <span className="place-sub">
-                            {busyId === location.id
-                                ? "Switching…"
-                                : `${plural(location.passes_this_week, "pass")} this week`}
-                        </span>
-                    </span>
-                </button>
+                    {editingId === location.id && (
+                        <PlaceEditPanel
+                            location={location}
+                            canRemove={locations.length > 1}
+                            busy={busyId === location.id}
+                            error={editError}
+                            onSave={(nickname) => rename(location.id, nickname)}
+                            onRemove={() => remove(location.id)}
+                            onCancel={stopEditing}
+                        />
+                    )}
+                </div>
             ))}
 
             <p className="message note">

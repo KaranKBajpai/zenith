@@ -64,3 +64,146 @@
     color: var(--muted);
     font-size: 14px;
 }
+
+/* ---- Pencil + edit panel ---- */
+
+/* One place: the row line and, when open, its panel. */
+.place-item {
+    margin-bottom: 12px;
+}
+
+/* Holds the row and the pencil, so the pencil can sit on top of the row. */
+.place-line {
+    position: relative;
+}
+
+/* Room on the right so long names don't run under the pencil. */
+.place-line .place-row {
+    padding-right: 60px;
+    margin-bottom: 0;
+}
+
+.place-edit {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%); /* centers it vertically */
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+.place-edit:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.place-edit:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.edit-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.edit-label {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.edit-input {
+    font: inherit;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.25);
+    color: inherit;
+}
+
+.edit-input:focus {
+    outline: 2px solid #a78bfa;
+    outline-offset: 1px;
+}
+
+.edit-actions,
+.edit-remove {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.edit-remove {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.edit-save,
+.edit-cancel,
+.edit-danger {
+    font: inherit;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.edit-save {
+    border: none;
+    background: #a78bfa;
+    color: #16161f;
+    font-weight: 600;
+}
+
+.edit-cancel {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: transparent;
+    color: inherit;
+}
+
+.edit-danger {
+    border: none;
+    background: #f87171;
+    color: #16161f;
+    font-weight: 600;
+}
+
+.edit-danger-link {
+    font: inherit;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #f87171;
+    cursor: pointer;
+}
+
+.edit-panel button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.edit-hint {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.edit-error {
+    margin: 0;
+    font-size: 14px;
+    color: #f87171;
+}
