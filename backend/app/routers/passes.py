@@ -5,8 +5,14 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.models import Location, Pass, User
-from app.schemas import DayResponse, LocationResponse, PassesResponse, PassResponse
 from app.services.timezones import week_window
+from app.schemas import (
+    DayResponse,
+    LocationResponse,
+    PassDetailResponse,
+    PassesResponse,
+    PassResponse,
+)
 
 router = APIRouter()
 
@@ -58,4 +64,48 @@ def get_passes(db: Session = Depends(get_db)):
     return PassesResponse(
         location=LocationResponse.model_validate(location),
         days=[DayResponse(date=day, passes=by_day[day]) for day in days],
+    )
+
+
+@router.get("/api/passes/{pass_id}", response_model=PassDetailResponse)
+def get_pass(pass_id: int, db: Session = Depends(get_db)):
+    # FastAPI fills pass_id from the URL: /api/passes/42 -> 42
+    found = (
+        db.query(Pass)
+        .options(joinedload(Pass.satellite))
+        .filter(Pass.id == pass_id)
+        .first()
+    )
+    if found is None:
+        raise HTTPException(status_code=404, detail="Pass not found")
+
+    # A pass has no user_id, but its location does. Check ownership
+    # through the location. Someone else's pass gets the same 404, so we
+    # never reveal that it exists.
+    location = db.get(Location, found.location_id)
+    if location is None or location.user_id != TEST_USER_ID:
+        raise HTTPException(status_code=404, detail="Pass not found")
+
+    # "Also this week": the next 3 upcoming passes from the same place,
+    # leaving out the one we're showing.
+    now, _, end_of_window = week_window(location.timezone)
+    others = (
+        db.query(Pass)
+        .options(joinedload(Pass.satellite))
+        .filter(
+            Pass.location_id == location.id,
+            Pass.id != found.id,
+            Pass.fade_time >= now,
+            Pass.appear_time < end_of_window,
+        )
+        .order_by(Pass.appear_time)
+        .limit(3)
+        .all()
+    )
+
+    return PassDetailResponse(
+        pass_info=PassResponse.model_validate(found),
+        location=LocationResponse.model_validate(location),
+        computed_at=found.computed_at,
+        also_this_week=[PassResponse.model_validate(p) for p in others],
     )

@@ -108,3 +108,16 @@ class GeocodeSearchResponse(BaseModel):
 class ReverseGeocodeResponse(BaseModel):
     # None if Nominatim found no town name for that spot
     name: str | None
+
+
+class PassDetailResponse(BaseModel):
+    # Named pass_info because "pass" is a reserved word in Python
+    pass_info: PassResponse
+    # The place this pass was worked out for (for its timezone and
+    # the "Where you're watching from" section)
+    location: LocationResponse
+    # When this pass was worked out: by the nightly job, or when
+    # the place was saved
+    computed_at: datetime
+    # The next few upcoming passes from the same place
+    also_this_week: list[PassResponse]
