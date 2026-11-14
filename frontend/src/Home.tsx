@@ -139,7 +139,11 @@ function Home() {
                             <p className="empty">Nothing visible this night.</p>
                         ) : (
                             day.passes.map((p) => (
-                                <PassCard key={p.id} pass={p} timeZone={tz} />
+                                // The whole card is a link to its detail page.
+                                // Key moves to the link, since it's now the outer element
+                                <Link key={p.id} to={`/passes/${p.id}`} className="pass-link">
+                                    <PassCard pass={p} timeZone={tz} />
+                                </Link>
                             ))
                         )}
                     </section>

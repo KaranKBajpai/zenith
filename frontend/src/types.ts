@@ -87,3 +87,10 @@ export type GeocodeSearchResponse = {
 export type ReverseGeocodeResponse = {
     name: string | null; // null if OpenStreetMap has no town there
 };
+
+export type PassDetailResponse = {
+    pass_info: Pass;
+    location: Location;
+    computed_at: string;
+    also_this_week: Pass[];
+};

@@ -186,3 +186,10 @@
     color: inherit;
     text-decoration: none;
 }
+
+/* A pass card wrapped in a link: no underline, no blue text */
+.pass-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}

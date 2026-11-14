@@ -116,3 +116,44 @@ export function formatWeekdayShort(iso: string, timeZone: string): string {
         new Date(iso)
     );
 }
+
+const COMPASS_NAMES = [
+    "north", "north-northeast", "northeast", "east-northeast",
+    "east", "east-southeast", "southeast", "south-southeast",
+    "south", "south-southwest", "southwest", "west-southwest",
+    "west", "west-northwest", "northwest", "north-northwest",
+];
+
+export function compassName(degrees: number): string {
+    const index = Math.round(degrees / 22.5) % 16
+    return COMPASS_NAMES[index]
+}
+
+// The calendar date of a moment, in a timezone: "2026-11-12"
+export function localDate(iso: string, timeZone: string): string {
+    return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date(iso));
+}
+
+export function dayWord(iso: string, timeZone: string): string {
+    const passDay = localDate(iso, timeZone);
+    const today = todayIn(timeZone);
+
+    // Tomorrow = today + 1 day. Done in UTC so it's pure date math with no
+    // timezone shifting. Date.UTC handles month ends (Nov 30 + 1 = Dec 1).
+    const [year, month, day] = today.split("-").map(Number);
+    const tomorrow = new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
+
+    if (passDay === today) return "Today";
+    if (passDay === tomorrow) return "Tomorrow";
+    return Intl.DateTimeFormat("en-US", { weekday: "long", timeZone }).format(new Date(iso));
+}
+
+// "2026-11-12T12:00:00Z" -> "9 hours ago"
+export function timeAgo(iso: string): string {
+    const minutes = Math.round((Date.now() - Date.parse(iso)) / 60_000);
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${plural(minutes, "minute")} ago`;
+    const hours = Math.round(minutes / 60)
+    if (hours < 24) return `${plural(hours, "hour")} ago`;
+    return `${plural(Math.round(hours / 24), "day")} ago`;
+}

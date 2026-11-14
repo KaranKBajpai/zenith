@@ -1,0 +1,225 @@
+/* ---- Pass Detail ---- */
+
+/* Back link on the left, tag on the right */
+.detail-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.detail-tag {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(167, 139, 250, 0.5);
+}
+
+.detail-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.detail-title {
+    margin: 0;
+}
+
+.detail-badge {
+    flex-shrink: 0; /* don't squash the badge on narrow phones */
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(167, 139, 250, 0.25);
+    font-size: 14px;
+}
+
+.detail-when {
+    margin: 6px 0 0;
+    opacity: 0.75;
+}
+
+.detail-status {
+    margin: 8px 0 0;
+    color: #a78bfa;
+}
+
+.detail-lead {
+    margin: 20px 0 0;
+    font-size: 19px;
+    line-height: 1.5;
+}
+
+.detail-tz-note {
+    margin: 10px 0 0;
+    font-size: 15px;
+    color: #c4b5fd;
+}
+
+/* The pass card */
+.detail-card {
+    margin: 24px 0;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-card-head {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* Three equal columns: Appears / Peak / Fades */
+.detail-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.detail-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* The purple line to the left of Peak */
+.detail-col.peak {
+    padding-left: 12px;
+    border-left: 2px solid #a78bfa;
+}
+
+.detail-col-label {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.detail-col.peak .detail-col-label,
+.detail-col.peak .detail-col-sub {
+    color: #a78bfa;
+    opacity: 1;
+}
+
+.detail-col-time {
+    font-size: 20px;
+}
+
+.detail-col-sub {
+    font-size: 14px;
+    opacity: 0.75;
+}
+
+.detail-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.detail-chip {
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 14px;
+}
+
+/* How to watch it: numbered circles */
+.detail-steps {
+    list-style: none;
+    counter-reset: step; /* start our own counter at 0 */
+    margin: 8px 0 0;
+    padding: 0;
+}
+
+.detail-steps li {
+    counter-increment: step; /* +1 for each item */
+    position: relative;
+    padding-left: 44px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* Draws the number in a circle before each item */
+.detail-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #a78bfa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* Sections with a divider line above */
+.detail-section {
+    margin-top: 24px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-place {
+    margin: 4px 0 0;
+    font-size: 17px;
+}
+
+.detail-small {
+    margin: 10px 0 0;
+    font-size: 14px;
+    opacity: 0.65;
+}
+
+/* Also this week: each row is a link */
+.other-pass {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    text-decoration: none;
+}
+
+.other-pass:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.other-main {
+    flex: 1; /* takes the spare room, pushing the time right */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.other-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.other-sub {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.other-chevron {
+    font-size: 22px;
+    opacity: 0.5;
+}
