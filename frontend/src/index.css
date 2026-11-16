@@ -24,3 +24,22 @@ body {
     background: var(--bg);
     color: var(--text);
 }
+
+/* Clerk's account button, pinned to the top-right corner for now */
+.account-corner {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10; /* stays above the page content */
+}
+
+/* Signed-out placeholder page */
+.signed-out {
+    padding-top: 15vh; /* push it down from the top a bit */
+}
+
+.signed-out-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
