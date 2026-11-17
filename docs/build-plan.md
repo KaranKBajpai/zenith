@@ -1,29 +1,26 @@
-# Zenith — 4-Week MVP Build Plan
+# Zenith — MVP Build Plan
 
-**Target:** working, deployed v1 in 4 weeks
+**Target:** working, deployed v1
 **Starting point:** architecture, spike validation, and full screen design already complete
-**Target date:** MVP by ~Oct 25
 
 ---
 
-## Week 1 — Backend foundation + API design ✅ COMPLETE
+## Phase 1 — Backend foundation + API design ✅ COMPLETE
 
 - [x] Repo cloned, project structure created
 - [x] Postgres running locally in Docker
 - [x] Database connection working (`database.py`, `.env`, tested)
 - [x] Database models: User, Satellite, Location, Pass, FollowedSatellite (join table)
 - [x] Tables created in Postgres and verified
-- [x] API design finalized for Week 1 endpoints (designed from the built screens)
+- [x] API design finalized for phase 1 endpoints (designed from the built screens)
 - [x] `GET /api/passes` working (mock data)
 - [x] `POST /api/locations` working (real, validated with Pydantic)
 - [x] `GET /api/satellites` working (real catalog from the database)
 - [x] Routes split into `app/routers/` (Donovan's review feedback)
 
-**Moved to Week 2:** Clerk. Sign-in happens in the frontend, which doesn't exist until Week 2, so both halves get built together.
-
 ---
 
-## Week 2 — Core logic + real data
+## Phase 2 — Core logic + real data
 
 - [x] **Brightness (backend).** Standard magnitudes for the curated satellites, `magnitude` column on Satellite, per-pass brightness estimated in the pass logic (checked against Heavens-Above)
 - [x] Database migrations set up with Alembic (first migration creates all tables)
@@ -40,7 +37,7 @@
 
 ---
 
-## Week 3 — Frontend build-out
+## Phase 3 — Frontend build-out
 
 - [x] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
 - [ ] Navigation pattern (navbar) built as a shared component first
@@ -58,7 +55,7 @@
 
 ---
 
-## Week 4 — Deploy, test, polish
+## Phase 4 — Deploy, test, polish
 
 - [ ] **Spending limit set in Railway dashboard at signup**
 - [ ] Backend + Postgres deployed on Railway
