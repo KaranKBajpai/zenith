@@ -40,7 +40,7 @@
 ## Phase 3 — Frontend build-out
 
 - [x] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
-- [ ] Navigation pattern (navbar) built as a shared component first
+- [x] Navigation pattern (navbar) built as a shared component first — top bar on wide screens, bottom tab bar on phones, active page highlighted (Pass Detail counts as Your week), links hidden during onboarding
 - [ ] Signed-Out Landing built
 - [x] Home (week view) built — real passes for the active location, 7 local calendar days, next-pass countdown, timezone banner when the location's zone differs from the device's
 - [x] Quality label (Excellent / Good / Fair) based on brightness, not max altitude — cutoffs: -2.0 or brighter / down to 0.0 / dimmer

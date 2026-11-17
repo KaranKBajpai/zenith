@@ -1,8 +1,9 @@
 
 import { BrowserRouter, Route, Routes } from "react-router";
-import { Show, UserButton, useAuth } from "@clerk/react";
+import { Show, useAuth } from "@clerk/react";
 import { setTokenGetter } from "./api";
 import Home from "./Home";
+import NavBar from "./NavBar";
 import Locations from "./Locations";
 import Satellites from "./Satellites";
 import PassDetail from "./PassDetail";
@@ -31,13 +32,10 @@ function App() {
 
             {/* Signed in: the real app. */}
             <Show when="signed-in">
-                {/* Clerk's avatar button: account settings and Sign out.
-                    Temporary spot; it moves into the navbar later. */}
                 {/* Must come before the pages, so the token is ready for their requests. */}
                 <AuthBridge />
-                <div className="account-corner">
-                    <UserButton />
-                </div>
+                {/* Top bar on wide screens, tab bar on phones. Holds the avatar too. */}
+                <NavBar />
 
                 {/* Which page shows for which address. */}
                 <Routes>

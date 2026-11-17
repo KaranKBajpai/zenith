@@ -1,0 +1,163 @@
+/* ---- Top bar (wide screens) ---- */
+
+.topbar {
+    position: sticky; /* stays at the top while the page scrolls */
+    top: 0;
+    z-index: 20;      /* above the page content */
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 14px 32px;
+    background: rgba(22, 22, 31, 0.92);
+    backdrop-filter: blur(8px); /* softly blurs content scrolling underneath */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.brand-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #a78bfa;
+}
+
+.topbar-links {
+    margin-left: auto; /* pushes the links (and avatar) to the right */
+    display: flex;
+    gap: 28px;
+}
+
+.topbar-link {
+    position: relative; /* so the underline can be placed relative to it */
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.topbar-link:hover {
+    color: #fff;
+}
+
+.topbar-link.active {
+    color: #fff;
+}
+
+/* The purple underline under the current page, sitting on the bar's bottom edge */
+.topbar-link.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -15px;
+    height: 2px;
+    border-radius: 2px;
+    background: #a78bfa;
+}
+
+/* During onboarding there are no links, so push the avatar right on its own */
+.topbar-account {
+    margin-left: auto;
+    display: flex;
+}
+
+.topbar-links + .topbar-account {
+    margin-left: 0;
+}
+
+/* ---- Bottom tab bar (phones) ---- */
+
+.tabbar {
+    position: fixed; /* glued to the bottom of the screen */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-around;
+    /* extra room at the bottom for the iPhone home bar */
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+    /* background: rgba(22, 22, 31, 0.95); */
+    background: #16161f;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tabbar-link {
+    position: relative;
+    display: flex;
+    flex-direction: column; /* icon above the label */
+    align-items: center;
+    gap: 4px;
+    padding: 4px 16px;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.tabbar-link.active {
+    color: #fff;
+}
+
+.tabbar-link.active .tabbar-icon {
+    color: #a78bfa;
+}
+
+/* The small purple line above the current tab */
+.tabbar-link.active::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%); /* centers it */
+    width: 28px;
+    height: 2px;
+    border-radius: 2px;
+    background: #a78bfa;
+}
+
+.tabbar-icon {
+    display: flex;
+}
+
+/* ---- Which bar shows, by screen width ---- */
+
+/* Wide screens (768px and up): top bar only */
+@media (min-width: 768px) {
+    .tabbar {
+        display: none;
+    }
+}
+
+/* Phones (under 768px): tab bar, plus the avatar floating top-right */
+@media (max-width: 767px) {
+    .topbar-brand,
+    .topbar-links {
+        display: none;
+    }
+
+    /* The top bar shrinks to just the avatar, floating in the corner */
+    .topbar {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        padding: 0;
+        background: none;
+        backdrop-filter: none;
+        border: none;
+    }
+
+    /* Room at the bottom so the tab bar doesn't cover the end of the page */
+    body {
+        padding-bottom: 84px;
+    }
+}
