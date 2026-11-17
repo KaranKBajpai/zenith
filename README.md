@@ -3,7 +3,7 @@
 A web app that tells you what's visible in the sky above your location and when to look up.
 
 ## Status
-Design phase. Core prediction logic validated (see `docs/spike-results.md` if present, or ask — validated against Heavens-Above within 2 minutes). Currently working through UI design.
+In active development. Working today: accounts (Clerk), onboarding, the week view of passes, pass details, followed satellites, and saved locations with place search. Pass predictions are computed from live CelesTrak orbital data with Skyfield, and were validated against Heavens-Above (within 2 minutes). See `docs/build-plan.md` for what's built and what's next.
 
 ## Stack
 - Frontend: React, TypeScript, Vite (Vercel)
@@ -13,6 +13,39 @@ Design phase. Core prediction logic validated (see `docs/spike-results.md` if pr
 ## Docs
 - `docs/architecture.md` — architecture decisions and reasoning
 - `docs/user-stories.md` — user stories and happy path
+- `docs/build-plan.md` — what's built and what's next
+
+## Spike
+`spike/spike.py` — standalone script validating the core pass-prediction logic (fetches real orbital data, computes visible satellite passes, checked against Heavens-Above)
+
+## Running locally
+
+### Prerequisites
+- Docker Desktop
+- Python 3.12+
+- Node.js 20.19+
+
+### 1. Start the database
+```bash
+docker run --name zenith-db -e POSTGRES_PASSWORD=devpassword -e POSTGRES_DB=zenith -p 5432:5432 -d postgres
+```
+
+# Zenith
+
+A web app that tells you what's visible in the sky above your location and when to look up.
+
+## Status
+In active development. Working today: accounts (Clerk), onboarding, the week view of passes, pass details, followed satellites, and saved locations with place search. Pass predictions are computed from live CelesTrak orbital data with Skyfield, and were validated against Heavens-Above (within 2 minutes). See `docs/build-plan.md` for what's built and what's next.
+
+## Stack
+- Frontend: React, TypeScript, Vite (Vercel)
+- Backend: Python, FastAPI, Skyfield (Railway)
+- Database: PostgreSQL
+
+## Docs
+- `docs/architecture.md` — architecture decisions and reasoning
+- `docs/user-stories.md` — user stories and happy path
+- `docs/build-plan.md` — what's built and what's next
 
 ## Spike
 `spike/spike.py` — standalone script validating the core pass-prediction logic (fetches real orbital data, computes visible satellite passes, checked against Heavens-Above)
@@ -40,31 +73,26 @@ pip install -r requirements.txt
 Create `backend/.env`:
 ```
 DATABASE_URL=postgresql://postgres:devpassword@localhost:5432/zenith
+CLERK_JWKS_URL=https://fun-ray-2730.clerk.accounts.dev/.well-known/jwks.json
 ```
+(`CLERK_JWKS_URL` is where the backend gets Clerk's public keys to check sign-in tokens. It's public, not a secret.)
 
-Set up the tables, the satellite catalog and a test user, then start the server:
+Set up the tables and the satellite catalog, then start the server:
 ```bash
 alembic upgrade head
 python -m app.seed
-docker exec -it zenith-db psql -U postgres -d zenith -c "INSERT INTO users (clerk_user_id, email) VALUES ('test_user_1', 'test@example.com');"
 uvicorn app.main:app --reload
 ```
 The API runs at http://localhost:8000 (interactive docs at http://localhost:8000/docs). On startup it fetches orbit data from CelesTrak and computes passes.
 
-### 3. Add a location
-Until sign-in is added, the app uses a single test user. Give it a location (this one becomes the active location):
-```bash
-curl -X POST http://localhost:8000/api/locations -H "Content-Type: application/json" -d '{"nickname": "Portland", "latitude": 45.52, "longitude": -122.68, "place_name": "Portland, OR"}'
-```
-
-### 4. Start the frontend
+### 3. Start the frontend
 In a second terminal:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open http://localhost:5173, go to **Manage satellites → + Add**, and follow a satellite to see its passes.
+Open http://localhost:5173 and create an account. Onboarding walks you through picking a place and the satellites to follow, then shows your week.
 
 ## Credits
 
