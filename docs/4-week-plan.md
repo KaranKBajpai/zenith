@@ -42,12 +42,12 @@
 
 ## Week 3 — Frontend build-out
 
-- [ ] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
+- [x] **Clerk** — sign up / log in in the frontend, token checked in the backend, `TEST_USER_ID` replaced with the real user
 - [ ] Navigation pattern (navbar) built as a shared component first
 - [ ] Signed-Out Landing built
 - [x] Home (week view) built — real passes for the active location, 7 local calendar days, next-pass countdown, timezone banner when the location's zone differs from the device's
 - [x] Quality label (Excellent / Good / Fair) based on brightness, not max altitude — cutoffs: -2.0 or brighter / down to 0.0 / dimmer
-- [ ] Pass Detail built
+- [x] Pass Detail built — when and where to look, plain-English summary, Appears / Peak / Fades card, how-to-watch steps (fades mid-sky vs sinks, from real data), where you're watching from with "worked out N ago", also-this-week links; another user's pass returns the same 404 as a missing one
 - [ ] Sky Map built
 - [ ] Onboarding built
 - [x] Followed Satellites built — per-satellite week stats, expandable pass list, unfollow, Add panel with checkboxes (search, categories and descriptions wait for the bigger catalog)

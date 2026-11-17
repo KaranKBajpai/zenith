@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth import get_current_user
 from app.config import settings
 from app.log_setup import setup_logging
 from app.routers import geocode, health, locations, passes, satellites
@@ -40,4 +41,7 @@ app.include_router(health.router)
 app.include_router(passes.router)
 app.include_router(locations.router)
 app.include_router(satellites.router)
-app.include_router(geocode.router)
+# Geocoding needs sign-in too, so nobody can use our backend as a free route
+# to Nominatim. dependencies=[...] runs get_current_user before every
+# endpoint in this router, without changing geocode.py 
+app.include_router(geocode.router, dependencies=[Depends(get_current_user)])

@@ -1,11 +1,22 @@
 
 import { BrowserRouter, Route, Routes } from "react-router";
-import { Show, UserButton } from "@clerk/react";
+import { Show, UserButton, useAuth } from "@clerk/react";
+import { setTokenGetter } from "./api";
 import Home from "./Home";
 import Locations from "./Locations";
 import Satellites from "./Satellites";
 import PassDetail from "./PassDetail";
 import SignedOutPage from "./SignedOutPage";
+
+// Hands Clerk's getToken to api.ts, so every request can carry the token.
+// It draws nothing on screen.
+function AuthBridge() {
+    const { getToken } = useAuth();
+    // Set during the draw, not in a useEffect, so it's guaranteed to be in
+    // place before any page's useEffect sends its first request.
+    setTokenGetter(getToken);
+    return null;
+}
 
 // Which page shows for which address.
 function App() {
@@ -21,6 +32,8 @@ function App() {
             <Show when="signed-in">
                 {/* Clerk's avatar button: account settings and Sign out.
                     Temporary spot; it moves into the navbar later. */}
+                {/* Must come before the pages, so the token is ready for their requests. */}
+                <AuthBridge />
                 <div className="account-corner">
                     <UserButton />
                 </div>

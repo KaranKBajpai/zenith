@@ -3,20 +3,21 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_user
 from app.database import get_db
-from app.models import FollowedSatellite, Satellite, Location, Pass
+from app.models import FollowedSatellite, Satellite, Location, Pass, User
 from app.schemas import SatelliteListItem, SatelliteListResponse, SatelliteResponse
 from app.services.compute import compute_passes_for
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# Temporary placeholder until Clerk auth is added
-TEST_USER_ID = 1
-
 
 @router.get("/api/satellites", response_model=SatelliteListResponse)
-def list_satellites(db: Session = Depends(get_db)):
+def list_satellites(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
     # Query 1: the whole catalog in alphabetical order
     satellites = db.scalars(select(Satellite).order_by(Satellite.name)).all()
 
@@ -25,7 +26,7 @@ def list_satellites(db: Session = Depends(get_db)):
     followed_ids = set(
         db.scalars(
             select(FollowedSatellite.satellite_id).where(
-                FollowedSatellite.user_id == TEST_USER_ID
+                FollowedSatellite.user_id == user.id
             )
         ).all()
     )
@@ -42,23 +43,27 @@ def list_satellites(db: Session = Depends(get_db)):
 
 
 @router.put("/api/satellites/{satellite_id}/follow", response_model=SatelliteListItem)
-def follow_satellite(satellite_id: int, db: Session = Depends(get_db)):
+def follow_satellite(
+    satellite_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
     satellite = db.get(Satellite, satellite_id)
     if satellite is None:
         raise HTTPException(status_code=404, detail="Satellite not found")
 
     # Find the follow row for (this user, this satellite), if it exists.
-    existing = db.get(FollowedSatellite, (TEST_USER_ID, satellite_id))
+    existing = db.get(FollowedSatellite, (user.id, satellite_id))
 
     # Already following? Nothing to save or compute
     if existing is None:
-        db.add(FollowedSatellite(user_id=TEST_USER_ID, satellite_id=satellite_id))
+        db.add(FollowedSatellite(user_id=user.id, satellite_id=satellite_id))
         db.commit()
 
         # Compute passes for just this satellite at every saved location
         try:
             locations = db.scalars(
-                select(Location).where(Location.user_id == TEST_USER_ID)
+                select(Location).where(Location.user_id == user.id)
             ).all()
             for location in locations:
                 compute_passes_for(db, location, satellite)
@@ -75,7 +80,12 @@ def follow_satellite(satellite_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/api/satellites/{satellite_id}/follow", status_code=204)
-def unfollow_satellite(satellite_id: int, db: Session = Depends(get_db)):
+def unfollow_satellite(
+    satellite_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
+
     satellite = db.get(Satellite, satellite_id)
     if satellite is None:
         raise HTTPException(status_code=404, detail="Satellite not found")
@@ -83,13 +93,13 @@ def unfollow_satellite(satellite_id: int, db: Session = Depends(get_db)):
     # Remove the follow row
     db.execute(
         delete(FollowedSatellite).where(
-            FollowedSatellite.user_id == TEST_USER_ID,
+            FollowedSatellite.user_id == user.id,
             FollowedSatellite.satellite_id == satellite_id,
         )
     )
 
     # Remove this satellite's passes, but only at this user's locations.
-    my_location_ids = select(Location.id).where(Location.user_id == TEST_USER_ID)
+    my_location_ids = select(Location.id).where(Location.user_id == user.id)
     db.execute(
         delete(Pass).where(
             Pass.satellite_id == satellite_id,

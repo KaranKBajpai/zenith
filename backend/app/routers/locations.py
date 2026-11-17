@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_user
 from app.database import get_db
 from app.models import Location, Pass, User
 from app.schemas import (
@@ -21,26 +22,29 @@ router = APIRouter()
 # so every line this logger writes says where it came from.
 logger = logging.getLogger(__name__)
 
-#Temporary placeholder until Clerk auth is added
-TEST_USER_ID = 1
 
-def get_owned_location (db: Session, location_id: int) -> Location:
+def get_owned_location (db: Session, location_id: int, user: User) -> Location:
     """Return the location if it exists AND belongs to this user.
     
     Missing or someone else's: same 404 either way, so we never reveal
     that another user's location exists. Used by every endpoint that changes one specific location.
     """
     location = db.get(Location, location_id)
-    if location is None or location.user_id != TEST_USER_ID:
+    if location is None or location.user_id != user.id:
         raise HTTPException(status_code=404, detail="Location not found")
     return location
 
 
 @router.post("/api/locations", response_model=LocationResponse, status_code=201)
-def create_location(location: LocationCreate, db: Session = Depends(get_db)):
+def create_location(
+    location: LocationCreate, 
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
+
     # Step 1: build the new location row 
     new_location = Location(
-        user_id=TEST_USER_ID,
+        user_id=user.id,
         nickname=location.nickname,
         latitude=location.latitude,
         longitude=location.longitude,
@@ -52,8 +56,7 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db)):
     db.add(new_location)
 
     # Step 2: if the user has no active location yet, make this one active
-    user = db.get(User, TEST_USER_ID)
-    if user is not None and user.active_location_id is None:
+    if user.active_location_id is None:
         # flush() sends the INSERT to Postgres WITHOUT committing, so 
         # Postgres assigns new_location.id. We need that id right now.
         db.flush()
@@ -80,13 +83,16 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/api/locations", response_model=LocationListResponse)
-def list_locations(db: Session = Depends(get_db)):
-    user = db.get(User, TEST_USER_ID)
-    active_id = user.active_location_id if user else None
+def list_locations(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
+
+    active_id = user.active_location_id
 
     locations = (
         db.query(Location)
-        .filter(Location.user_id == TEST_USER_ID)
+        .filter(Location.user_id == user.id)
         .order_by(Location.created_at)
         .all()
     )
@@ -118,14 +124,14 @@ def list_locations(db: Session = Depends(get_db)):
 
 
 @router.put("/api/locations/{location_id}/active", response_model=LocationResponse)
-def set_active_location(location_id: int, db: Session = Depends(get_db)):
+def set_active_location(
+    location_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
+
     # FastAPI fills location_id from the URL: /api/locations/3/active -> 3
-    location = get_owned_location(db, location_id)
-
-    user = db.get(User, TEST_USER_ID)
-    if user is None:
-        raise HTTPException(status_code=404,  detail="User not found")
-
+    location = get_owned_location(db, location_id, user)
 
     # The actual switch. Passes already exist for every saved location,
     # so nothing needs computing.
@@ -139,10 +145,12 @@ def rename_location(
     location_id: int,
     changes: LocationUpdate,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
+    
     # A blank or too-long name never reaches this line: FastAPI rejects
     # it with a 422 first, bases on the LocationUpdate rules.
-    location = get_owned_location(db, location_id)
+    location = get_owned_location(db, location_id, user)
 
     location.nickname = changes.nickname
     db.commit()
@@ -151,23 +159,27 @@ def rename_location(
 
 
 @router.delete("/api/locations/{location_id}", status_code=204)
-def delete_location(location_id: int, db: Session = Depends(get_db)):
-    location = get_owned_location(db, location_id)
+def delete_location(
+    location_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
+    
+    location = get_owned_location(db, location_id, user)
 
     location_count = (
-        db.query(Location).filter(Location.user_id == TEST_USER_ID).count()
+        db.query(Location).filter(Location.user_id == user.id).count()
     )
     if location_count <= 1:
         raise HTTPException(
             status_code=409, detail="You need at least one location"
         )
 
-    user = db.get(User, TEST_USER_ID)
-    if user is not None and user.active_location_id == location.id:
+    if user.active_location_id == location.id:
         replacement = (
             db.query(Location)
             .filter(
-                Location.user_id == TEST_USER_ID,
+                Location.user_id == user.id,
                 Location.id != location.id,
             )
             .order_by(Location.created_at.desc())

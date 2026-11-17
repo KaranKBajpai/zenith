@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 
+from app.auth import get_current_user
 from app.database import get_db
 from app.models import Location, Pass, User
 from app.services.timezones import week_window
@@ -16,16 +17,16 @@ from app.schemas import (
 
 router = APIRouter()
 
-# Temporary placeholder untl Clerk auth is added
-TEST_USER_ID = 1
-
 
 @router.get("/api/passes", response_model=PassesResponse)
-def get_passes(db: Session = Depends(get_db)):
+def get_passes(
+    db: Session = Depends(get_db),
+    # The signed-in user, from their Clerk token
+    user: User = Depends(get_current_user),
+    ):
+    
     # Step 1: Find the user's active location.
-    # db.get() looks a row up but its primary key (id). Returns None if missing.
-    user = db.get(User, TEST_USER_ID)
-    if user is None or user.active_location_id is None:
+    if user.active_location_id is None:
         raise HTTPException(status_code=404, detail="No active location set")
 
     location = db.get(Location, user.active_location_id)
@@ -68,7 +69,12 @@ def get_passes(db: Session = Depends(get_db)):
 
 
 @router.get("/api/passes/{pass_id}", response_model=PassDetailResponse)
-def get_pass(pass_id: int, db: Session = Depends(get_db)):
+def get_pass(
+    pass_id: int, 
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+    ):
+
     # FastAPI fills pass_id from the URL: /api/passes/42 -> 42
     found = (
         db.query(Pass)
@@ -83,7 +89,7 @@ def get_pass(pass_id: int, db: Session = Depends(get_db)):
     # through the location. Someone else's pass gets the same 404, so we
     # never reveal that it exists.
     location = db.get(Location, found.location_id)
-    if location is None or location.user_id != TEST_USER_ID:
+    if location is None or location.user_id != user.id:
         raise HTTPException(status_code=404, detail="Pass not found")
 
     # "Also this week": the next 3 upcoming passes from the same place,

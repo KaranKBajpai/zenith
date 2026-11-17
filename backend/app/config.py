@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     # requires that apps can switch it off if they ask.
     geocoding_enabled: bool = True
 
+    # Where Clerk publishes its public keys (JWKS), used to check that a
+    # session token really came from Clerk. No default: the app refuses to
+    # start without it, since nothing can be signed in otherwise.
+    clerk_jwks_url: str
+
     @property
     def frontend_origin_list(self) -> list[str]:
         """frontend_origins split into a list, with spaces and blanks removed."""
