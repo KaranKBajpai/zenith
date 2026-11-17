@@ -20,6 +20,20 @@ async function authHeaders(): Promise<Record<string, string>> {
     return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+
+// An error from the backend that remembers the HTTP status code (404, 409...),
+// so callers can check "was this a 404?" instead of comparing message text.
+// "extends Error" = everything a normal Error has, plus status.
+export class ApiError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+        super(message); // let Error set up the message as usual
+        this.status = status;
+    }
+}
+
+
 // Build the error for a failed request. FastAPI sends errors as
 // {"detail": "..."}. If there's a readable sentence, use it, so the user
 // sees "You need at least one location" instead of "status 409".
@@ -27,19 +41,19 @@ async function requestError(
     method: string,
     path: string,
     response: Response,
-): Promise<Error> {
+): Promise<ApiError> {
     try {
         const body = await response.json();
         // detail is a string for our own HTTPExceptions (404, 409).
         // For a 422 (failed validation) it's a list of problems,
         // which isn't readable, so we skip it.
         if (typeof body.detail === "string") {
-            return new Error(body.detail);
+            return new ApiError(body.detail, response.status);
         }
     } catch {
         // The body wasn't JSON (e.g. the server crashed). Fall through.
     }
-    return new Error(`${method} ${path} failed with status ${response.status}`);
+    return new ApiError(`${method} ${path} failed with status ${response.status}`, response.status);
 }
 
 // Turn whatever was thrown into a message for the screen.
@@ -116,7 +130,7 @@ export async function apiDelete(path: string): Promise<void> {
         method: "DELETE",
         headers: { ...(await authHeaders()) },
     });
-    
+
     if (!response.ok) {
         throw await requestError("DELETE", path, response);
     }

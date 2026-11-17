@@ -7,6 +7,7 @@ import Locations from "./Locations";
 import Satellites from "./Satellites";
 import PassDetail from "./PassDetail";
 import SignedOutPage from "./SignedOutPage";
+import Onboarding from "./Onboarding";
 
 // Hands Clerk's getToken to api.ts, so every request can carry the token.
 // It draws nothing on screen.
@@ -44,6 +45,7 @@ function App() {
                     <Route path="/satellites" element={<Satellites />} />
                     <Route path="/locations" element={<Locations />} />
                     <Route path="/passes/:id" element={<PassDetail />} />
+                    <Route path="/welcome" element={<Onboarding />} />
                 </Routes>
             </Show>
         </BrowserRouter>

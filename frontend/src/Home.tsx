@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
-import { apiGet } from "./api";
+import { Link, useNavigate } from "react-router";
+import { apiGet, ApiError, errorText } from "./api";
 import type { PassesResponse, SatelliteListResponse } from "./types";
 import {
     compassDirection,
@@ -18,6 +18,7 @@ function Home() {
     const [passes, setPasses] = useState<PassesResponse | null>(null);
     const [followedCount, setFollowedCount] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     // Runs once when the page appears. Promise.all fires both requests
     // at the same time and waits until BOTH come back.
@@ -32,7 +33,17 @@ function Home() {
                     satellitesData.satellites.filter((s) => s.is_followed).length
                 );
             })
-            .catch((err) => setError(String(err)));
+            .catch((err) => {
+                // 404 = no active place yet (a brand-new account).
+                // Send them to set one up instead of showing an error.
+                // replace: true swaps this history entry, so Back doesn't
+                // bounce them between Home and Onboarding.
+                if (err instanceof ApiError && err.status === 404) {
+                    navigate("/welcome", { replace: true });
+                    return;
+                }
+                setError(errorText(err));
+            });
     }, []);
 
     if (error) {

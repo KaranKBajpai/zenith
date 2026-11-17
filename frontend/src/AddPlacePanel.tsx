@@ -5,7 +5,8 @@ import type { GeocodeSearchResponse, Location, ReverseGeocodeResponse } from "./
 
 type Props = {
     onAdded: () => void;  // called after a place is saved
-    onCancel: () => void; // called when the user closes the panel
+    onCancel?: () => void; // optional: no onCancel = no Close button
+    embedded?: boolean;    // inside another page's step: hide the "Add a place" heading
 };
 
 // A place the user has picked but not saved yet.
@@ -47,7 +48,7 @@ function roundCoord(value: number): number {
     return Math.round(value * 100) / 100;
 }
 
-function AddPlacePanel({ onAdded, onCancel }: Props) {
+function AddPlacePanel({ onAdded, onCancel, embedded = false }: Props) {
     const [query, setQuery] = useState("");
     // null = haven't searched yet. [] = searched, found nothing.
     const [results, setResults] = useState<Candidate[] | null>(null);
@@ -144,7 +145,7 @@ function AddPlacePanel({ onAdded, onCancel }: Props) {
     return (
         // Reuses the edit panel's look from Locations.css.
         <div className="edit-panel">
-            <p className="add-heading">Add a place</p>
+            {!embedded && <p className="add-heading">Add a place</p>}
 
             {chosen === null ? (
                 // Step 1: find a place.
@@ -241,9 +242,11 @@ function AddPlacePanel({ onAdded, onCancel }: Props) {
                         © OpenStreetMap contributors
                     </a>
                 </p>
-                <button type="button" className="edit-cancel" onClick={onCancel} disabled={busy}>
-                    Close
-                </button>
+                {onCancel && (
+                    <button type="button" className="edit-cancel" onClick={onCancel} disabled={busy}>
+                        Close
+                    </button>
+                )}
             </div>
         </div>
     );

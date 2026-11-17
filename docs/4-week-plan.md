@@ -49,7 +49,7 @@
 - [x] Quality label (Excellent / Good / Fair) based on brightness, not max altitude — cutoffs: -2.0 or brighter / down to 0.0 / dimmer
 - [x] Pass Detail built — when and where to look, plain-English summary, Appears / Peak / Fades card, how-to-watch steps (fades mid-sky vs sinks, from real data), where you're watching from with "worked out N ago", also-this-week links; another user's pass returns the same 404 as a missing one
 - [ ] Sky Map built
-- [ ] Onboarding built
+- [x] Onboarding built — new accounts are sent to /welcome: pick a place (search or current location), pick satellites, then Home; steps unlock in order and are worked out from saved data, so refresh/back are safe
 - [x] Followed Satellites built — per-satellite week stats, expandable pass list, unfollow, Add panel with checkboxes (search, categories and descriptions wait for the bigger catalog)
 - [x] Saved Locations built — switch active place, rename, remove (last place can't be removed), add by search or current location via Nominatim (search on submit only, results cached, OpenStreetMap credited), device coordinates rounded to ~1 km
 - [ ] Settings built
