@@ -30,38 +30,6 @@ In active development. Working today: accounts (Clerk), onboarding, the week vie
 docker run --name zenith-db -e POSTGRES_PASSWORD=devpassword -e POSTGRES_DB=zenith -p 5432:5432 -d postgres
 ```
 
-# Zenith
-
-A web app that tells you what's visible in the sky above your location and when to look up.
-
-## Status
-In active development. Working today: accounts (Clerk), onboarding, the week view of passes, pass details, followed satellites, and saved locations with place search. Pass predictions are computed from live CelesTrak orbital data with Skyfield, and were validated against Heavens-Above (within 2 minutes). See `docs/build-plan.md` for what's built and what's next.
-
-## Stack
-- Frontend: React, TypeScript, Vite (Vercel)
-- Backend: Python, FastAPI, Skyfield (Railway)
-- Database: PostgreSQL
-
-## Docs
-- `docs/architecture.md` — architecture decisions and reasoning
-- `docs/user-stories.md` — user stories and happy path
-- `docs/build-plan.md` — what's built and what's next
-
-## Spike
-`spike/spike.py` — standalone script validating the core pass-prediction logic (fetches real orbital data, computes visible satellite passes, checked against Heavens-Above)
-
-## Running locally
-
-### Prerequisites
-- Docker Desktop
-- Python 3.12+
-- Node.js 20.19+
-
-### 1. Start the database
-```bash
-docker run --name zenith-db -e POSTGRES_PASSWORD=devpassword -e POSTGRES_DB=zenith -p 5432:5432 -d postgres
-```
-
 ### 2. Start the backend
 ```bash
 cd backend
